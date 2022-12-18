@@ -19,7 +19,6 @@ class discoword(discord.Client):
 
     async def on_ready(self):
         status.start()
-        bot_status.start()
         await self.wait_until_ready()
         if not self.synced:
             await tree.sync()
@@ -30,103 +29,53 @@ client = discoword()
 tree = app_commands.CommandTree(client)
 statusNumber = [0,0]
 uuid_list = ['25d9f9ccdfd9491e8f886a48de671510', 'e23703d26f4e43d79d17146821c32943', '05ba7cd0c6f54e198717a919983ed3d6']
-@tasks.loop(seconds=10)
+username_list = ['WeeGoJIM', 'FroggyPadi', 'gemstone_nuker']
+online_list = ['False','False','False']
+gamers = []
+@tasks.loop(seconds=5)
 async def status():
-    try:
-        for uuid in uuid_list:
-            API_data = requests.get('https://api.hypixel.net/status?key=4a4bf834-c737-4e2d-89c8-c8506a819e7e&uuid='+uuid)
-            apidata = API_data.text
-            parse_json_apidata = json.loads(apidata)
-
-        status_froggy = False
-        status_macroalt = False
-        statusNumber = [0,0]
+    for index, uuid in enumerate(uuid_list):
+        API_data_hypixel = requests.get('https://api.hypixel.net/status?key=4a4bf834-c737-4e2d-89c8-c8506a819e7e&uuid='+uuid)
+        #API_data_mojang = requests.get('https://api.mojang.com/user/profile/' + uuid)
+        apidata_hypixel = API_data_hypixel.text
+        #apidata_mojang = API_data_mojang.text
+        parse_json_apidata_hypixel = json.loads(apidata_hypixel)
+        #parse_json_apidata_mojang = json.loads(apidata_mojang)
+        try: 
+            online_status = parse_json_apidata_hypixel['session']['online']
+        except Exception:
+            await logchannel.send("API error perhaps")
+            pass
+        #username = parse_json_apidata_mojang['name']
+        username = username_list[index]
+        print(online_status, username, online_list[index])
         channel = client.get_channel(1022187717192323112)
-        oldcataexp = "0"
-        while True:
-            # sleep time
-            await asyncio.sleep(5)
-
-            # status api stuff
-            froggy_API = requests.get('https://api.hypixel.net/status?key=4a4bf834-c737-4e2d-89c8-c8506a819e7e&uuid=e23703d2-6f4e-43d7-9d17-146821c32943')
-            hypixeldata_froggy = froggy_API.text
-            parse_json_hypixel_froggy = json.loads(hypixeldata_froggy)
-            online_status_froggy = parse_json_hypixel_froggy['session']['online']
-
-            channel = client.get_channel(1022187717192323112)
-            
-            macroalt_API = requests.get('https://api.hypixel.net/status?key=4a4bf834-c737-4e2d-89c8-c8506a819e7e&uuid=25d9f9ccdfd9491e8f886a48de671510')
-            hypixeldata_macroalt = macroalt_API.text
-            parse_json_hypixel_macroalt = json.loads(hypixeldata_macroalt)
-            online_status_macroalt = parse_json_hypixel_macroalt['session']['online']
-            # get time then cut off decimal points
-            current_time = int(time.time())
-            # skycrypt dungeon exp api stuff
-            """skycrypt_response_API = requests.get('https://sky.shiiyu.moe/api/v2/dungeons/FroggyPadi/Blueberry')
-            skycryptdata = skycrypt_response_API.text
-            parse_json_skycrypt = json.loads(skycryptdata)
-            dungeons_exp = parse_json_skycrypt['dungeons']['catacombs']['level']['xp']
-            cataexp = int(dungeons_exp)"""
-            if online_status_froggy != status_froggy:
-                status_froggy = online_status_froggy
-                #d = datetime.datetime.now()
-                #List = [d.strftime("%a") + " " + d.strftime("%b") + " " + d.strftime("%d") + " " + d.strftime("%Y"),
-                #        cataexp]
-
-                if status_froggy:
-                    statusNumber[0] = 1
-                    await channel.send("FroggyPadi is online since <t:" + str(current_time) + ":R>")
-                    print(statusNumber)
-                    #await client.change_presence(activity=discord.Game(name="FroggyPadi is Online"))
-                elif not status_froggy:
-                    await channel.send("FroggyPadi has been offline since <t:" + str(
-                        current_time) + ":R>")
-                    statusNumber[0] = 0
-                    print(statusNumber)
-            elif online_status_macroalt != status_macroalt:
-                status_macroalt = online_status_macroalt
-                if status_macroalt:
-                    statusNumber[1] = 1
-                    await channel.send("WeeGoJIM has been online since <t:" + str(current_time) + ":R>")
-                    print(statusNumber)
-                elif not status_macroalt:
-                    statusNumber[1] = 0
-                    await channel.send("WeeGoJIM has been offline since <t:" + str(current_time) + ":R>")
-                    print(statusNumber)
-
-                    """with open('FroggyPadi.csv', "a") as f_object:
-                        writer_object = writer(f_object)
-                        writer_object.writerow(List)
-                        f_object.close()
-                        print("wrote")
-                    df = pd.read_csv('FroggyPadi.csv')
-                    df = df.replace('', np.nan).replace('na', np.nan)
-                    df = df.dropna()
-                    second_elements = df.iloc[:, 1]
-                    last_element = second_elements.iloc[-1]
-                    second_to_last_element = second_elements.iloc[-2]
-                    cataexpgain = last_element - second_to_last_element"""
-                    
-                    #await client.change_presence(activity=discord.Game(name="FroggyPadi is Offline"))
-                    #make a list with the current date and the current cata experience and then append that to the csv file
-
-
-    except Exception:
-        pass
-
-@tasks.loop(seconds=30)
-async def bot_status():
-    if statusNumber == [1,0]:
-        await client.change_presence(activity=discord.Game(name="FroggyPadi is online"))
-    elif statusNumber == [0,1]:
-        await client.change_presence(activity=discord.Game(name="WeeGoJIM is online"))
-    elif statusNumber == [0,0]:
-        await client.change_presence(activity=discord.Game(name="No one is currently online"))
-
-
-
-
-
+        logchannel = client.get_channel(996284607404200057)
+        current_time = int(time.time())
+        if online_status:
+            statusname = "ONLINE :green_square:"
+            online_status = 'True'
+        if not online_status:
+            statusname = "OFFLINE :red_square:"
+            online_status = 'False'
+        if online_status != online_list[index]:
+            await channel.send(username + " has been " + statusname + " since <t:" + str(current_time) + ":R>")
+            online_list[index] = online_status
+            if online_status == 'True':
+                gamers.append(username)
+            elif online_status == 'False':
+                gamers.remove(username)
+        else:
+            pass
+        if len(gamers) > 1:
+            separator = ", "
+            await client.change_presence(activity=discord.Game(name=separator.join(gamers) + " are online"))
+        elif len(gamers) == 1:
+            separator = ", "
+            await client.change_presence(activity=discord.Game(name= separator.join(gamers) + " is online")) 
+        elif len(gamers) == 0:
+            await client.change_presence(activity=discord.Game(name="No one is online"))
+        await asyncio.sleep(5)
 @tree.command(name="graph", description="send graph of cata exp")
 async def self(interaction):
     df = pd.read_csv("FroggyPadi.csv")
