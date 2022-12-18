@@ -29,10 +29,15 @@ class discoword(discord.Client):
 client = discoword()
 tree = app_commands.CommandTree(client)
 statusNumber = [0,0]
-
+uuid_list = ['25d9f9ccdfd9491e8f886a48de671510', 'e23703d26f4e43d79d17146821c32943', '05ba7cd0c6f54e198717a919983ed3d6']
 @tasks.loop(seconds=10)
 async def status():
     try:
+        for uuid in uuid_list:
+            API_data = requests.get('https://api.hypixel.net/status?key=4a4bf834-c737-4e2d-89c8-c8506a819e7e&uuid='+uuid)
+            apidata = API_data.text
+            parse_json_apidata = json.loads(apidata)
+
         status_froggy = False
         status_macroalt = False
         statusNumber = [0,0]
