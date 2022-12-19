@@ -41,7 +41,7 @@ async def status():
             pass
         #username = parse_json_apidata_mojang['name']
         username = username_list[index]
-        print(online_status, username, online_list[index])
+        if debug: print(online_status, username, online_list[index])
         channel = client.get_channel(mainchannel)
         logchannel = client.get_channel(loggingchannel)
         current_time = int(time.time())
