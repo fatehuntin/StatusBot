@@ -22,7 +22,9 @@ class discoword(discord.Client):
 
 client = discoword()
 tree = app_commands.CommandTree(client)
-online_list = ['False','False','False']
+online_list = []
+for x in uuid_list:
+    online_list.append('False')
 gamers = []
 @tasks.loop(seconds=5)
 async def status():
@@ -41,7 +43,7 @@ async def status():
             pass
         #username = parse_json_apidata_mojang['name']
         username = username_list[index]
-        if debug: print(online_status, username, online_list[index])
+        if debug: print(online_status, username, online_list[index], online_list)
         channel = client.get_channel(mainchannel)
         logchannel = client.get_channel(loggingchannel)
         current_time = int(time.time())
