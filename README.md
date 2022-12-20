@@ -3,6 +3,8 @@ Discord bot to facilitate account sharing
 
 
 # Installation
+**Installation Guide is for linux**
+
 To begin using this bot simply use 
 ```shell
 git clone https://github.com/fatehuntin/StatusBot.git
