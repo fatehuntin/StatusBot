@@ -1,6 +1,8 @@
 # StatusBot
 Discord bot to facilitate account sharing
 
+The bot sends a message every time a tracked account logs in or out of hypixel and has a status that changes depending on how many accounts are online.
+
 
 # Installation
 **Installation Guide is for linux**
@@ -12,6 +14,10 @@ git clone https://github.com/fatehuntin/StatusBot.git
 Then copy and rename example_config.py to config.py
 ```shell
 cp example_config.py config.py
+```
+Then install the required packages
+```shell
+pip install -r requirements.txt
 ```
 
 # Creating the bot on discord
