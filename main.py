@@ -5,7 +5,7 @@ import asyncio
 import time
 from discord.ext import commands, tasks
 from discord import app_commands
-from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier
+from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji
 
 class discoword(discord.Client):
     def __init__(self):
@@ -47,10 +47,10 @@ async def status():
         logchannel = client.get_channel(loggingchannel)
         current_time = int(time.time())
         if online_status:
-            statusname = "ONLINE :green_square:"
+            statusname = "ONLINE " + onlineemoji
             online_status = 'True'
         if not online_status:
-            statusname = "OFFLINE :red_square:"
+            statusname = "OFFLINE " + offlineemoji
             online_status = 'False'
         if online_status != online_list[index]:
             await channel.send(modifier[index] + username + " has been " + statusname + " since <t:" + str(current_time) + ":R>")

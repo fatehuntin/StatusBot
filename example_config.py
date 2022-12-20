@@ -13,6 +13,12 @@ username_list = []
 #A prefix to the username to improve readability (works with emojis)
 #Example = [':smile:',':sob:']
 modifier = []
+#Online/Offline icons
+#These are the discord emojis that indicate if the account is online or offline
+#default/example offlineemoji = ":red_squre:"
+#onlineemoji = ":green_square:"
+offlineemoji = ":red_square:"
+onlineemoji = ":green_square:"
 
 #API key from hypixel to access their api
 #Example: api_key = 'as1h21huihiuasasbt128741'
