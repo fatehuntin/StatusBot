@@ -13,6 +13,10 @@ Then copy and rename example_config.py to config.py
 ```shell
 cp example_config.py config.py
 ```
+Then install the required packages
+```shell
+pip install -r requirements.txt
+```
 
 # Creating the bot on discord
 
