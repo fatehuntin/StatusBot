@@ -3,6 +3,7 @@ import requests
 import discord
 import asyncio
 import time
+import logging
 from discord.ext import commands, tasks
 from discord import app_commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime
@@ -31,7 +32,7 @@ for x in uuid_list:
 gamers = []
 def timestamper(epochin):
     if int(epochin) < 60:
-        epoch = epochin + " seconds"
+        epoch = str(epochin) + " seconds"
     elif int(epochin) < 3600:
         epoch = str(int(int(epochin)/60)) + " minutes and " + str(int(epochin)%60) + " seconds"
     elif int(epochin) < 86400:
@@ -47,16 +48,30 @@ async def status():
         parse_json_apidata_hypixel = json.loads(apidata_hypixel)
         channel = client.get_channel(mainchannel)
         logchannel = client.get_channel(loggingchannel)
+        if debug:
+            logging.basicConfig(
+                filename="logs.log",
+                format='%(asctime)s %(levelname)-8s %(message)s',
+                level=logging.DEBUG,
+                datefmt='%Y-%m-%d %H:%M:%S')
+        if not debug:
+            logging.basicConfig(
+                filename="logs.log",
+                format='%(asctime)s %(levelname)-8s %(message)s',
+                level=logging.WARNING,
+                datefmt='%Y-%m-%d %H:%M:%S')
         try: 
             online_status = parse_json_apidata_hypixel['session']['online']
         except Exception:
+            logging.warning("API ERROR")
             if debug:
                 await logchannel.send("API error perhaps")
             pass
         username = username_list[index]
-        if debug: print(online_status, username, online_list[index], online_list,last_online)
-        
         current_time = int(time.time())
+        if debug: 
+            print(online_status, username, online_list[index], online_list,last_online)
+            logging.debug(online_status, online_list[index], username, last_online[index], timestamper(current_time - last_online[index]))
         if online_status:
             statusname = "ONLINE " + onlineemoji
             online_status = 'True'
@@ -77,7 +92,6 @@ async def status():
                 last_online[index] = current_time
             elif online_status == 'False':
                 gamers.remove(username)
-                pass
         else:
             pass
         if len(gamers) > 1:
