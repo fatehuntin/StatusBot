@@ -14,11 +14,16 @@ username_list = []
 #Example = [':smile:',':sob:']
 modifier = []
 #Online/Offline icons
-#These are the discord emojis that indicate if the account is online or offline
+#These are the discord emojis that indicate if the account is online or offline. You can leave them blank for a cleaner message
 #default/example offlineemoji = ":red_squre:"
 #onlineemoji = ":green_square:"
 offlineemoji = ":red_square:"
 onlineemoji = ":green_square:"
+#Optional settings
+uptime = False
+#Shows amount of time player was online for (will be wacky on first restart I cba to change it)
+debug = False
+#Prints extra debug stuff to console, leave off unless directed otherwise
 
 #API key from hypixel to access their api
 #Example: api_key = 'as1h21huihiuasasbt128741'
@@ -32,5 +37,4 @@ mainchannel = 0
 
 
 #Extra debug stuff, fill in logging channel just in case, it can be the same channel as your main channel
-debug = False
 loggingchannel = 0
