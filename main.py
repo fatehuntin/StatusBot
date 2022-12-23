@@ -76,7 +76,7 @@ async def status():
                 gamers.append(username)
                 last_online[index] = current_time
             elif online_status == 'False':
-                #gamers.remove(username)
+                gamers.remove(username)
                 pass
         else:
             pass
