@@ -1,13 +1,11 @@
-import json
-import requests
 import discord
 import asyncio
 import time
 import logging
-from discord.ext import commands, tasks
+from discord.ext import tasks
 from discord import app_commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime
-
+from utils import timestamper, hypixelapi
 
 class discoword(discord.Client):
     def __init__(self):
@@ -30,22 +28,10 @@ logchannel = client.get_channel(loggingchannel)
 for x in uuid_list:
     online_list.append('False')
 gamers = []
-def timestamper(epochin):
-    if int(epochin) < 60:
-        epoch = str(epochin) + " seconds"
-    elif int(epochin) < 3600:
-        epoch = str(int(int(epochin)/60)) + " minutes and " + str(int(epochin)%60) + " seconds"
-    elif int(epochin) < 86400:
-        epoch = str(int(int(epochin)/3600)) + " hours, " + str(int(int(epochin)%3600/60)) + " minutes and " + str(int(epochin)%60) + " seconds"
-    elif int(epochin) > 86400:
-        epoch = str(int(int(epochin)/86400)) + " days, " + str(int(int(epochin)%86400/3600)) + " hours, " + str(int(int(epochin)%3600/60)) + " minutes and " + str(int(epochin)%60) + " seconds"
-    return epoch
 @tasks.loop(seconds=5)
 async def status():
     for index, uuid in enumerate(uuid_list):
-        API_data_hypixel = requests.get('https://api.hypixel.net/status?key=' + api_key + '&uuid='+uuid)
-        apidata_hypixel = API_data_hypixel.text
-        parse_json_apidata_hypixel = json.loads(apidata_hypixel)
+        parse_json_apidata_hypixel = hypixelapi(uuid,api_key)
         channel = client.get_channel(mainchannel)
         logchannel = client.get_channel(loggingchannel)
         if debug:
@@ -83,7 +69,6 @@ async def status():
                 online_time = " They were online for: " + timestamper(current_time - last_online[index])
             else: 
                 online_time = ""
-
         if online_status != online_list[index]:
             await channel.send(modifier[index] + username + " has been " + statusname + " since <t:" + str(current_time) + ":R>" + online_time)
             online_list[index] = online_status
