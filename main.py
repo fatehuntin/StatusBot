@@ -5,7 +5,9 @@ import logging
 from discord.ext import tasks, commands
 #from discord import app_commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime
-from utils import timestamper, hypixelapi, skycryptapi
+from utils import timestamper, hypixelapi, skycryptapi, fakeapi
+from totaltime import totaltime
+print(totaltime)
 description = """
 Status Bot
 https://github.com/fatehuntin/StatusBot
@@ -29,17 +31,19 @@ online_status =[]
 last_online = [0,0,0]
 channel = bot.get_channel(mainchannel)
 logchannel = bot.get_channel(loggingchannel)
-for x in uuid_list:
+for index, x in enumerate(uuid_list):
     online_list.append('False')
     online_status.append(False)
+    last_online[index] = int(time.time())
 gamers = []
 current_time = int(time.time())
 @tasks.loop(seconds=5)
 async def status():
     for index, uuid in enumerate(uuid_list):
-        parse_json_apidata_hypixel = hypixelapi(uuid,api_key)
+        parse_json_apidata_hypixel = fakeapi() #hypixelapi(uuid,api_key)
         channel = bot.get_channel(mainchannel)
         logchannel = bot.get_channel(loggingchannel)
+        current_time = int(time.time())
         if debug:
             logging.basicConfig(
                 filename="logs.log",
@@ -79,9 +83,27 @@ async def status():
             online_list[index] = online_status[index]
             if online_status[index] == 'True':
                 gamers.append(username)
+                timeplayed = current_time-last_online[index]
+                print("lastonline index" , last_online[index])
+                print("timeplayed",timeplayed)
+                print("totaltime index",totaltime[index])
+                totaltime[index] =+ timeplayed
                 last_online[index] = current_time
+                with open('totaltime.py', 'w+') as fp:
+                    fp.write("totaltime = [")
+                    for x in totaltime:
+                        fp.write("%s," %x)
+                    fp.write("]")
+                    fp.close()
             elif online_status[index] == 'False':
                 gamers.remove(username)
+                last_online[index] = current_time
+                with open('totaltime.py', 'w+') as fp:
+                    fp.write("totaltime = [")
+                    for x in totaltime:
+                        fp.write("%s," %x)
+                    fp.write("]")
+                    fp.close()
         else:
             pass
         if len(gamers) > 1:
@@ -103,18 +125,20 @@ async def stats(ctx):
                           description="Total playtime for each account",
                           color=discord.Color.dark_purple())
     for index, username in enumerate(username_list):
+        total_time = timestamper(totaltime[index])
+        current_time = int(time.time())
         if online_status[index] == 'True':
             statusEmoji = " :green_square:"
-            onlineorno = "They have been online for " + timestamper(current_time - last_online[index])
-        if online_status[index] == 'False':
+            onlineorno = "**Online**\n"
+        elif online_status[index] == 'False':
             statusEmoji = " :red_square:"
-            onlineorno = ""
+            onlineorno = "**Offline**\n"
         else:
             statusEmoji = ":question:"
-            onlineorno = ""
+            onlineorno = "**SOMETHING BROKE PING NOLAN!!!!**\n"
             print(online_status)
         embed.add_field(name=username + statusEmoji,
-                        value="Last online: <t:" + str(last_online[index]) + ":R> \n" + onlineorno,
+                        value="Last online: <t:" + str(last_online[index]) + ":R> \n" + onlineorno + "Total time online: " + total_time,
                         inline=False)
     embed.set_footer(text="Made by Noly")
     await ctx.respond(embed=embed)

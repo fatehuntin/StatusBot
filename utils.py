@@ -14,7 +14,10 @@ def timestamper(epochin):
         epoch = str(int(int(epochin)/86400)) + " days, " + str(int(int(epochin)%86400/3600)) + " hours, " + str(int(int(epochin)%3600/60)) + " minutes and " + str(int(epochin)%60) + " seconds"
     return epoch
 
-
+def fakeapi():
+    status = open('status.json')
+    parse_json_apidata_hypixel = json.load(status)
+    return parse_json_apidata_hypixel
 
 def hypixelapi(uuid,api_key):
     API_data_hypixel = requests.get('https://api.hypixel.net/status?key=' + api_key + '&uuid='+uuid)

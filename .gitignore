@@ -3,3 +3,5 @@ config.py
 __pycache*
 logs.log
 test.py
+*.json
+totaltime.py
