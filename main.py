@@ -39,7 +39,7 @@ current_time = int(time.time())
 @tasks.loop(seconds=5)
 async def status():
     for index, uuid in enumerate(uuid_list):
-        parse_json_apidata_hypixel = fakeapi() #hypixelapi(uuid,api_key)
+        parse_json_apidata_hypixel = hypixelapi(uuid,api_key)
         channel = bot.get_channel(mainchannel)
         logchannel = bot.get_channel(loggingchannel)
         current_time = int(time.time())
