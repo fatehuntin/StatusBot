@@ -3,7 +3,6 @@ import asyncio
 import time
 import logging
 from discord.ext import tasks, commands
-#from discord import app_commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime
 from utils import timestamper, hypixelapi, skycryptapi, fakeapi
 from totaltime import totaltime
@@ -83,11 +82,6 @@ async def status():
             online_list[index] = online_status[index]
             if online_status[index] == 'True':
                 gamers.append(username)
-                timeplayed = current_time-last_online[index]
-                print("lastonline index" , last_online[index])
-                print("timeplayed",timeplayed)
-                print("totaltime index",totaltime[index])
-                totaltime[index] =+ timeplayed
                 last_online[index] = current_time
                 with open('totaltime.py', 'w+') as fp:
                     fp.write("totaltime = [")
@@ -98,6 +92,8 @@ async def status():
             elif online_status[index] == 'False':
                 gamers.remove(username)
                 last_online[index] = current_time
+                timeplayed = current_time-last_online[index]
+                totaltime[index] =+ timeplayed
                 with open('totaltime.py', 'w+') as fp:
                     fp.write("totaltime = [")
                     for x in totaltime:
