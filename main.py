@@ -15,15 +15,16 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 bot = commands.Bot(
+    command_prefix= "~",
     description = description,
-    intents = intents
+    intents = intents,
 )
 @bot.event
 async def on_ready():
     status.start()
     await bot.sync_commands()
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
-    print('------')
+    print('-------------------------------------------------')
 
 online_list = []
 online_status =[]
