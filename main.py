@@ -27,7 +27,7 @@ async def on_ready():
 
 online_list = []
 online_status =[]
-last_online = [0,0,0]
+last_online = [0,0,0,0]
 channel = bot.get_channel(mainchannel)
 logchannel = bot.get_channel(loggingchannel)
 for index, x in enumerate(uuid_list):
