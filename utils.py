@@ -1,8 +1,8 @@
-from config import api_key
+from config import api_key, fortniteid, fortnitekey
 import requests
 import json
 
-
+firstrun = False
 def timestamper(epochin):
     if int(epochin) < 60:
         epoch = str(epochin) + " seconds"
@@ -81,3 +81,8 @@ enchanting_xp, 18
 alchemy_lvl, 19
 alchemy_xp, 20
 """
+def fortniteapi():
+    API_data_fortnite = requests.get('https://fortnite-api.com/v2/stats/br/v2/' + fortniteid, headers=fortnitekey)
+    apidata_fortnite = API_data_fortnite.text
+    parse_json_apidata_fortnite = json.loads(apidata_fortnite)
+    return parse_json_apidata_fortnite

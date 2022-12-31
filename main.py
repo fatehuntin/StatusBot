@@ -3,9 +3,9 @@ import asyncio
 import time
 import logging
 from discord.ext import tasks, commands
-from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime
-from utils import timestamper, hypixelapi, skycryptapi, fakeapi
-from totaltime import totaltime #loads previous times
+from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime, fortnitechannel, fortniteusername, fortnite
+from utils import timestamper, hypixelapi, fortniteapi, fakeapi, firstrun
+from totaltime import totaltime
 description = """
 Status Bot
 https://github.com/fatehuntin/StatusBot
@@ -21,10 +21,11 @@ bot = commands.Bot(
 @bot.event
 async def on_ready():
     status.start()
+    fortnitewins.start()
     await bot.sync_commands()
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('-------------------------------------------------')
-
+firstrun = False
 online_list = []
 online_status =[]
 last_online = [0,0,0,0]
@@ -33,7 +34,7 @@ logchannel = bot.get_channel(loggingchannel)
 for index, x in enumerate(uuid_list):
     online_list.append('False')
     online_status.append(False)
-    last_online[index] = int(time.time())
+    last_online.append(int(time.time()))
 gamers = []
 current_time = int(time.time())
 @tasks.loop(seconds=3)
@@ -112,6 +113,17 @@ async def status():
         elif len(gamers) == 0:
             await bot.change_presence(activity=discord.Game(name="No one is online"))
         await asyncio.sleep(1)
+parse_fortnite_api = fortniteapi()
+wins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
+@tasks.loop(seconds=10)
+async def fortnitewins():
+    global wins
+    parse_fortnite_api = fortniteapi()
+    newwins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
+    fnchannel = bot.get_channel(fortnitechannel)
+    if newwins > wins:
+        await fnchannel.send("BIG W " + fortniteusername + " GOT AN EPIC VICTORY ROYALE <@&1058524479959076975> ")
+        wins = newwins
 @bot.slash_command(description="Sends the bot's latency.")
 async def ping(ctx):
     await ctx.respond(f"Pong! Latency is {int(bot.latency * 1000)}ms")
