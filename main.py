@@ -119,7 +119,10 @@ wins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
 async def fortnitewins():
     global wins
     parse_fortnite_api = fortniteapi()
-    newwins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
+    try:
+        newwins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
+    except Exception:
+        logging.error("API ERROR")
     fnchannel = bot.get_channel(fortnitechannel)
     if newwins > wins:
         await fnchannel.send("BIG W " + fortniteusername + " GOT AN EPIC VICTORY ROYALE <@&1058524479959076975> ")

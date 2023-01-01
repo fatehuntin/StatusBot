@@ -20,10 +20,13 @@ def fakeapi():
     return parse_json_apidata_hypixel
 
 def hypixelapi(uuid,api_key):
-    API_data_hypixel = requests.get('https://api.hypixel.net/status?key=' + api_key + '&uuid='+uuid)
-    apidata_hypixel = API_data_hypixel.text
-    parse_json_apidata_hypixel = json.loads(apidata_hypixel)
-    return parse_json_apidata_hypixel
+    try:
+        API_data_hypixel = requests.get('https://api.hypixel.net/status?key=' + api_key + '&uuid='+uuid)
+        apidata_hypixel = API_data_hypixel.text
+        parse_json_apidata_hypixel = json.loads(apidata_hypixel)
+        return parse_json_apidata_hypixel
+    except Exception:
+        return parse_json_apidata_hypixel
 
 def skycryptapi(username):
     API_data_skycrypt_current = requests.get('https://sky.shiiyu.moe/api/v2/profile/' + username)
