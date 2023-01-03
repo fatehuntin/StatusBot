@@ -20,12 +20,11 @@ bot = commands.Bot(
 )
 @bot.event
 async def on_ready():
-    status.start()
-    fortnitewins.start()
+    logchannel = bot.get_channel(loggingchannel)
+    await logchannel.send("STARTED")
     await bot.sync_commands()
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('-------------------------------------------------')
-firstrun = False
 online_list = []
 online_status =[]
 last_online = [0,0,0,0]
@@ -156,4 +155,47 @@ async def stats(ctx):
                         inline=False)
     embed.set_footer(text="Made by Noly")
     await ctx.respond(embed=embed)
+
+@bot.slash_command(description="Check if things are running")
+async def tech_support(ctx):
+    if not status.is_running():
+        if not fortnitewins.is_running():
+            fortnitewins.start()
+            status.start()
+            await ctx.respond("Fortnitewins and Status were both not running, they are being restarted now")
+        if fortnitewins.is_running():
+            status.start()
+            await ctx.respond("Status was not running and is now being restarted")
+    if not fortnitewins.is_running():
+        fortnitewins.start()
+        await ctx.respond("Fortnitewins was not running and is now being restarted")
+
+    else:
+        await ctx.respond("Everything seems to be up and running atm")
+
+@bot.slash_command(description="Tech support for the tech support loop")
+async def tech_support_tech_support(ctx):
+    restoremyfaithinhumanity.start()
+    await ctx.respond("Why did you even need to use this command smh (noly is shit at coding)")
+
+@tasks.loop(seconds=30)
+async def restoremyfaithinhumanity():
+    #seems redundant, might fix everything killing itself instantly
+    asyncio.sleep(30)
+    logchannel = bot.get_channel(loggingchannel)
+    if not status.is_running():
+        if not fortnitewins.is_running():
+            fortnitewins.start()
+            status.start()
+            await logchannel.send("Everything restarted, something catastrophic probably happened <@319574411579752459> ")
+        if fortnitewins.is_running():
+            status.start()
+            await logchannel.send("Status restarted (Fuck api(probably))")
+    if not fortnitewins.is_running():
+        fortnitewins.start()
+        await logchannel.send("Fortnitewins restarted (it broke)")
+
+    else:
+        pass
+
 bot.run(KEY)
