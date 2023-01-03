@@ -60,8 +60,8 @@ async def status():
             online_status[index] = parse_json_apidata_hypixel['session']['online']
         except Exception:
             logging.warning("API ERROR")
-            if debug:
-                await logchannel.send("API error perhaps")
+            await logchannel.send("API error perhaps (I want to die)")
+            online_status[index] = "Questionable variable assignment to make api drop a straight nuclear shit in my bed causing the whole program to erupt"
             pass
         username = username_list[index]
         if debug: 
