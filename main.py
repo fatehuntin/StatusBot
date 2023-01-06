@@ -123,9 +123,12 @@ async def fortnitewins():
     except Exception:
         logging.error("API ERROR")
     fnchannel = bot.get_channel(fortnitechannel)
-    if newwins > wins:
-        await fnchannel.send("BIG W " + fortniteusername + " GOT AN EPIC VICTORY ROYALE <@&1058524479959076975> ")
-        wins = newwins
+    try:
+        if newwins > wins:
+            await fnchannel.send("BIG W " + fortniteusername + " GOT AN EPIC VICTORY ROYALE <@&1058524479959076975> ")
+            wins = newwins
+    except Exception:
+        print("Fuck api ig")
 @bot.slash_command(description="Sends the bot's latency.")
 async def ping(ctx):
     await ctx.respond(f"Pong! Latency is {int(bot.latency * 1000)}ms")
@@ -156,46 +159,65 @@ async def stats(ctx):
     embed.set_footer(text="Made by Noly")
     await ctx.respond(embed=embed)
 
-@bot.slash_command(description="Check if things are running")
-async def tech_support(ctx):
-    if not status.is_running():
-        if not fortnitewins.is_running():
-            fortnitewins.start()
-            status.start()
-            await ctx.respond("Fortnitewins and Status were both not running, they are being restarted now")
-        if fortnitewins.is_running():
-            status.start()
-            await ctx.respond("Status was not running and is now being restarted")
-    if not fortnitewins.is_running():
-        fortnitewins.start()
-        await ctx.respond("Fortnitewins was not running and is now being restarted")
-
-    else:
-        await ctx.respond("Everything seems to be up and running atm")
-
 @bot.slash_command(description="Tech support for the tech support loop")
-async def tech_support_tech_support(ctx):
+async def tech_support(ctx):
     restoremyfaithinhumanity.start()
     await ctx.respond("Why did you even need to use this command smh (noly is shit at coding)")
 
 @tasks.loop(seconds=30)
 async def restoremyfaithinhumanity():
     #seems redundant, might fix everything killing itself instantly
-    asyncio.sleep(30)
     logchannel = bot.get_channel(loggingchannel)
+
     if not status.is_running():
         if not fortnitewins.is_running():
-            fortnitewins.start()
-            status.start()
-            await logchannel.send("Everything restarted, something catastrophic probably happened <@319574411579752459> ")
+            try:
+                fortnitewins.start()
+                status.start()
+            except Exception:
+                pass
+            await logchannel.send("Everything restarted, something catastrophic probably happened <@319574411579752459> \nThis can also just be the program starting")
         if fortnitewins.is_running():
-            status.start()
+            try:
+                status.start()
+            except Exception:
+                pass
             await logchannel.send("Status restarted (Fuck api(probably))")
     if not fortnitewins.is_running():
-        fortnitewins.start()
+        try:
+            fortnitewins.start()
+        except Exception:
+            pass
         await logchannel.send("Fortnitewins restarted (it broke)")
 
     else:
         pass
+    await asyncio.sleep(30)
+@bot.slash_command(description="Get statuses and general stats of the bot")
+async def info(ctx):
+    if status.is_running():
+        statusStatus = "Running   :green_square:"
+    if not status.is_running():
+        statusStatus = "Not running   :red_square:"
+    if restoremyfaithinhumanity.is_running():
+        skillIssue = "Running   :green_square:"
+    if not restoremyfaithinhumanity.is_running():
+        skillIssue = "Not running   :red_square:"
+    if fortnitewins.is_running():
+        fortnitestatus = "Running   :green_square:"
+    if not fortnitewins.is_running():
+        fortnitestatus = "Not running   :red_square:"
+    embed = discord.Embed(title="Info",
+    color=discord.Color.dark_purple()
+    )
+    embed.add_field(name="Status",
+    value=statusStatus
+    )
+    embed.add_field(name="Task keeper",
+    value=skillIssue)
+    embed.add_field(name="Fortnite Win Tracker",
+    value=fortnitestatus,
+    inline=False)
+    await ctx.respond(embed=embed)
 
 bot.run(KEY)
