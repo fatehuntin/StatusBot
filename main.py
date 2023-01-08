@@ -55,6 +55,8 @@ async def status():
                 format='%(asctime)s %(levelname)-8s %(message)s',
                 level=logging.WARNING,
                 datefmt='%Y-%m-%d %H:%M:%S')
+        if not parse_json_apidata_hypixel['success']:
+            break
         try: 
             online_status[index] = parse_json_apidata_hypixel['session']['online']
         except Exception:
