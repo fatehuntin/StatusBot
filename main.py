@@ -3,7 +3,7 @@ import asyncio
 import time
 import logging
 from discord.ext import tasks, commands
-from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime, fortnitechannel, fortniteusername, fortnite
+from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime, fortnitechannel, fortniteusername, dmuser
 from utils import timestamper, hypixelapi, fortniteapi, fakeapi, firstrun
 from totaltime import totaltime
 description = """
@@ -164,6 +164,7 @@ async def stats(ctx):
 @bot.slash_command(description="Tech support for the tech support loop")
 async def tech_support(ctx):
     restoremyfaithinhumanity.start()
+    moyai.start()
     await ctx.respond("Why did you even need to use this command smh (noly is shit at coding)")
 
 @tasks.loop(seconds=30)
@@ -221,5 +222,10 @@ async def info(ctx):
     value=fortnitestatus,
     inline=False)
     await ctx.respond(embed=embed)
+
+@tasks.loop(hours=1)
+async def moyai():
+    user = await bot.get_user(dmuser)
+    await bot.send_message(user, ":moyai:")
 
 bot.run(KEY)
