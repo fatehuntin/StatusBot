@@ -3,9 +3,14 @@ import asyncio
 import time
 import logging
 from discord.ext import tasks, commands
+<<<<<<< Updated upstream
 #from discord import app_commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime
 from utils import timestamper, hypixelapi, skycryptapi, fakeapi
+=======
+from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime, fortnitechannel, fortniteusername, dmuser, mayorchannelid
+from utils import timestamper, hypixelapi, fortniteapi, mayorapi
+>>>>>>> Stashed changes
 from totaltime import totaltime
 print(totaltime)
 description = """
@@ -21,7 +26,13 @@ bot = commands.Bot(
 )
 @bot.event
 async def on_ready():
+<<<<<<< Updated upstream
     status.start()
+=======
+    logchannel = bot.get_channel(loggingchannel)
+    await logchannel.send("STARTED")
+    await mayorchannel.start()
+>>>>>>> Stashed changes
     await bot.sync_commands()
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('------')
@@ -142,4 +153,87 @@ async def stats(ctx):
                         inline=False)
     embed.set_footer(text="Made by Noly")
     await ctx.respond(embed=embed)
+<<<<<<< Updated upstream
+=======
+
+@bot.slash_command(description="Tech support for the tech support loop")
+async def tech_support(ctx):
+    restoremyfaithinhumanity.start()
+    moyai.start()
+    await ctx.respond("Why did you even need to use this command smh (noly is shit at coding)")
+
+@tasks.loop(seconds=30)
+async def restoremyfaithinhumanity():
+    #seems redundant, might fix everything killing itself instantly
+    logchannel = bot.get_channel(loggingchannel)
+
+    if not status.is_running():
+        if not fortnitewins.is_running():
+            try:
+                fortnitewins.start()
+                status.start()
+            except Exception:
+                pass
+            await logchannel.send("Everything restarted, something catastrophic probably happened <@319574411579752459> \nThis can also just be the program starting")
+        if fortnitewins.is_running():
+            try:
+                status.start()
+            except Exception:
+                pass
+            await logchannel.send("Status restarted (Fuck api(probably))")
+    if not fortnitewins.is_running():
+        try:
+            fortnitewins.start()
+        except Exception:
+            pass
+        await logchannel.send("Fortnitewins restarted (it broke)")
+
+    else:
+        pass
+    await asyncio.sleep(30)
+@bot.slash_command(description="Get statuses and general stats of the bot")
+async def info(ctx):
+    if status.is_running():
+        statusStatus = "Running   :green_square:"
+    if not status.is_running():
+        statusStatus = "Not running   :red_square:"
+    if restoremyfaithinhumanity.is_running():
+        skillIssue = "Running   :green_square:"
+    if not restoremyfaithinhumanity.is_running():
+        skillIssue = "Not running   :red_square:"
+    if fortnitewins.is_running():
+        fortnitestatus = "Running   :green_square:"
+    if not fortnitewins.is_running():
+        fortnitestatus = "Not running   :red_square:"
+    embed = discord.Embed(title="Info",
+    color=discord.Color.dark_purple()
+    )
+    embed.add_field(name="Status",
+    value=statusStatus
+    )
+    embed.add_field(name="Task keeper",
+    value=skillIssue)
+    embed.add_field(name="Fortnite Win Tracker",
+    value=fortnitestatus,
+    inline=False)
+    await ctx.respond(embed=embed)
+
+@tasks.loop(hours=1)
+async def moyai():
+    user = await bot.get_user(dmuser)
+    await bot.send_message(user, ":moyai:")
+
+
+@tasks.loop(minutes=10)
+async def mayorchannel():
+    mayorchannelid = bot.get_channel(mayorchannelid)
+    parse_mayorapi = mayorapi()
+    lastupdated = parse_mayorapi['lastupdated']
+    embed = discord.Embed(title="Current Mayor Stats",
+    color=discord.Color.dark_gold())
+    currentmayor_perks = parse_mayorapi['mayor']['perks']
+    embed.add_field(name="Last Updated"
+    value="<t:"+ str(lastupdated) + ":R>")
+
+>>>>>>> Stashed changes
 bot.run(KEY)

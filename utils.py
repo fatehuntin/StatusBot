@@ -81,3 +81,17 @@ enchanting_xp, 18
 alchemy_lvl, 19
 alchemy_xp, 20
 """
+<<<<<<< Updated upstream
+=======
+def fortniteapi():
+    API_data_fortnite = requests.get('https://fortnite-api.com/v2/stats/br/v2/' + fortniteid, headers=fortnitekey)
+    apidata_fortnite = API_data_fortnite.text
+    parse_json_apidata_fortnite = json.loads(apidata_fortnite)
+    return parse_json_apidata_fortnite
+
+def mayorapi():
+    mayor_apidata = requests.get('https://api.hypixel.net/resources/skyblock/election')
+    mayorapi = mayor_apidata.text
+    parse_mayorapi = json.loads(mayorapi)
+    return parse_mayorapi
+>>>>>>> Stashed changes

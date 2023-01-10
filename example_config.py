@@ -19,6 +19,8 @@ modifier = []
 #onlineemoji = ":green_square:"
 offlineemoji = ":red_square:"
 onlineemoji = ":green_square:"
+#Self explanatory
+mayorchannelid = 124124124
 #Optional settings
 uptime = False
 #Shows amount of time player was online for (will be wacky on first restart I cba to change it)
