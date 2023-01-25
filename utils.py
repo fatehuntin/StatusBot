@@ -1,11 +1,11 @@
-from config import api_key
+from config import api_key, fortniteid, fortnitekey
 import requests
 import json
 import matplotlib.pyplot as plt; plt.rcdefaults()
 import numpy as np
 import matplotlib.pyplot as plt
 
-
+firstrun = False
 def timestamper(epochin):
     if int(epochin) < 60:
         epoch = str(epochin) + " seconds"
@@ -23,10 +23,13 @@ def fakeapi():
     return parse_json_apidata_hypixel
 
 def hypixelapi(uuid,api_key):
-    API_data_hypixel = requests.get('https://api.hypixel.net/status?key=' + api_key + '&uuid='+uuid)
-    apidata_hypixel = API_data_hypixel.text
-    parse_json_apidata_hypixel = json.loads(apidata_hypixel)
-    return parse_json_apidata_hypixel
+    try:
+        API_data_hypixel = requests.get('https://api.hypixel.net/status?key=' + api_key + '&uuid='+uuid)
+        apidata_hypixel = API_data_hypixel.text
+        parse_json_apidata_hypixel = json.loads(apidata_hypixel)
+        return parse_json_apidata_hypixel
+    except Exception:
+        return parse_json_apidata_hypixel
 
 def skycryptapi(username):
     API_data_skycrypt_current = requests.get('https://sky.shiiyu.moe/api/v2/profile/' + username)
@@ -135,3 +138,4 @@ def mayorgraphing():
     graphurl = f"https://image-charts.com/chart?&chco=CFECF7%2C27c9c2&chd=t:{performance[0]},{performance[1]},{performance[2]},{performance[3]},{performance[4]}&chs=700x300&cht=bvs&chtt=SkyBlock%20Mayor%20Votes&chxl=0%3A|{objectslist[0]}|{objectslist[1]}|{objectslist[2]}|{objectslist[3]}|{objectslist[4]}&chxs=1N*2s*{modifier},000000&chxt=x,y&chg=20,50,5,5,CECECE"
     return graphurl
     
+=======

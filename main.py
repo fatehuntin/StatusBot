@@ -4,7 +4,7 @@ import time
 import logging
 from discord.ext import tasks, commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime, fortnitechannel, fortniteusername, dmuser, mayorchannelid
-from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing
+from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, firstrun
 from totaltime import totaltime
 description = """
 Status Bot
@@ -14,8 +14,9 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 bot = commands.Bot(
+    command_prefix= "~",
     description = description,
-    intents = intents
+    intents = intents,
 )
 @bot.event
 async def on_ready():
@@ -25,23 +26,22 @@ async def on_ready():
     await logchannel.edit(content="")
     
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
-    print('------')
-
+    print('-------------------------------------------------')
 online_list = []
 online_status =[]
-last_online = [0,0,0]
+last_online = [0,0,0,0]
 channel = bot.get_channel(mainchannel)
 logchannel = bot.get_channel(loggingchannel)
 for index, x in enumerate(uuid_list):
     online_list.append('False')
     online_status.append(False)
-    last_online[index] = int(time.time())
+    last_online.append(int(time.time()))
 gamers = []
 current_time = int(time.time())
-@tasks.loop(seconds=5)
+@tasks.loop(seconds=3)
 async def status():
     for index, uuid in enumerate(uuid_list):
-        parse_json_apidata_hypixel = fakeapi() #hypixelapi(uuid,api_key)
+        parse_json_apidata_hypixel = hypixelapi(uuid,api_key)
         channel = bot.get_channel(mainchannel)
         logchannel = bot.get_channel(loggingchannel)
         current_time = int(time.time())
@@ -57,12 +57,14 @@ async def status():
                 format='%(asctime)s %(levelname)-8s %(message)s',
                 level=logging.WARNING,
                 datefmt='%Y-%m-%d %H:%M:%S')
+        if not parse_json_apidata_hypixel['success']:
+            break
         try: 
             online_status[index] = parse_json_apidata_hypixel['session']['online']
         except Exception:
             logging.warning("API ERROR")
-            if debug:
-                await logchannel.send("API error perhaps")
+            await logchannel.send("API error perhaps (I want to die)" + str(parse_json_apidata_hypixel))
+            online_status[index] = "Questionable variable assignment to make api drop a straight nuclear shit in my bed causing the whole program to erupt"
             pass
         username = username_list[index]
         if debug: 
@@ -84,12 +86,8 @@ async def status():
             online_list[index] = online_status[index]
             if online_status[index] == 'True':
                 gamers.append(username)
-                timeplayed = current_time-last_online[index]
-                print("lastonline index" , last_online[index])
-                print("timeplayed",timeplayed)
-                print("totaltime index",totaltime[index])
-                totaltime[index] =+ timeplayed
                 last_online[index] = current_time
+                print("writing", totaltime)
                 with open('totaltime.py', 'w+') as fp:
                     fp.write("totaltime = [")
                     for x in totaltime:
@@ -98,13 +96,15 @@ async def status():
                     fp.close()
             elif online_status[index] == 'False':
                 gamers.remove(username)
-                last_online[index] = current_time
+                timeplayed = current_time-last_online[index]
+                totaltime[index] = totaltime[index]+timeplayed
                 with open('totaltime.py', 'w+') as fp:
                     fp.write("totaltime = [")
                     for x in totaltime:
                         fp.write("%s," %x)
                     fp.write("]")
                     fp.close()
+                last_online[index] = current_time
         else:
             pass
         if len(gamers) > 1:
@@ -115,10 +115,27 @@ async def status():
             await bot.change_presence(activity=discord.Game(name= separator.join(gamers) + " is online")) 
         elif len(gamers) == 0:
             await bot.change_presence(activity=discord.Game(name="No one is online"))
-        await asyncio.sleep(5)
+        await asyncio.sleep(1)
+parse_fortnite_api = fortniteapi()
+wins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
+@tasks.loop(seconds=10)
+async def fortnitewins():
+    global wins
+    parse_fortnite_api = fortniteapi()
+    try:
+        newwins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
+    except Exception:
+        logging.error("API ERROR")
+    fnchannel = bot.get_channel(fortnitechannel)
+    try:
+        if newwins > wins:
+            await fnchannel.send("BIG W " + fortniteusername + " GOT AN EPIC VICTORY ROYALE <@&1058524479959076975> ")
+            wins = newwins
+    except Exception:
+        print("Fuck api ig")
 @bot.slash_command(description="Sends the bot's latency.")
 async def ping(ctx):
-    await ctx.respond(f"Pong! Latency is {int(bot.latency) * 1000}ms")
+    await ctx.respond(f"Pong! Latency is {int(bot.latency * 1000)}ms")
 
 @bot.slash_command(description='Total playtime for every account')
 async def stats(ctx):
@@ -131,15 +148,17 @@ async def stats(ctx):
         if online_status[index] == 'True':
             statusEmoji = " :green_square:"
             onlineorno = "**Online**\n"
+            lastorsince = "Online since: <t:"
         elif online_status[index] == 'False':
             statusEmoji = " :red_square:"
             onlineorno = "**Offline**\n"
+            lastorsince = "Last online: <t:"
         else:
             statusEmoji = ":question:"
             onlineorno = "**SOMETHING BROKE PING NOLAN!!!!**\n"
             print(online_status)
         embed.add_field(name=username + statusEmoji,
-                        value="Last online: <t:" + str(last_online[index]) + ":R> \n" + onlineorno + "Total time online: " + total_time,
+                        value=lastorsince + str(last_online[index]) + ":R> \n" + onlineorno + "Total time online: " + total_time,
                         inline=False)
     embed.set_footer(text="Made by Noly")
     await ctx.respond(embed=embed)
@@ -201,6 +220,7 @@ async def info(ctx):
     color=discord.Color.dark_purple()
     )
     embed.add_field(name="Status",
+
     value=statusStatus,
     inline=False
     )
@@ -217,10 +237,12 @@ async def info(ctx):
 
 @tasks.loop(hours=1)
 async def moyai():
+    #THIS DOES NOT WORK
     userchnl = bot.get_channel(dmuser)
     print(dmuser)
     print(userchnl)
     await userchnl.send(":moyai:")
+    
 
 
 @bot.slash_command(description="Start the mayor channel")
@@ -292,8 +314,6 @@ async def mayorchannel():
         value="<t:"+ str(lastupdated) + ":R>",
         inline=False)
         graphurl = mayorgraphing()
-
-
         embed.set_image(url=graphurl)
         mayorruncount =+ 1
         await lastmessage.edit(embed=embed)

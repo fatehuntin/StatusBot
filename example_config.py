@@ -37,6 +37,12 @@ KEY = ''
 #Example: mainchannel = 12957102731923
 mainchannel = 0
 
-
+#Goofy fortnite win ping thingy
+fortniteuser = ''
+platform = 'mnk'
 #Extra debug stuff, fill in logging channel just in case, it can be the same channel as your main channel
 loggingchannel = 0
+
+#More goofy useless bullshit
+dmuser = 1231231
+#id of user to send messages to
