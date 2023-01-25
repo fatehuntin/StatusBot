@@ -1,9 +1,6 @@
 from config import api_key, fortniteid, fortnitekey
 import requests
 import json
-import matplotlib.pyplot as plt; plt.rcdefaults()
-import numpy as np
-import matplotlib.pyplot as plt
 
 firstrun = False
 def timestamper(epochin):
