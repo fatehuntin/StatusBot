@@ -3,8 +3,8 @@ import asyncio
 import time
 import logging
 from discord.ext import tasks, commands
-from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime, fortnitechannel, fortniteusername, dmuser
-from utils import timestamper, hypixelapi, fortniteapi, fakeapi, firstrun
+from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime, fortnitechannel, fortniteusername, dmuser, mayorchannelid
+from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, firstrun
 from totaltime import totaltime
 description = """
 Status Bot
@@ -23,6 +23,8 @@ async def on_ready():
     logchannel = bot.get_channel(loggingchannel)
     await logchannel.send("STARTED")
     await bot.sync_commands()
+    await logchannel.edit(content="")
+    
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('-------------------------------------------------')
 online_list = []
@@ -135,7 +137,7 @@ async def fortnitewins():
 async def ping(ctx):
     await ctx.respond(f"Pong! Latency is {int(bot.latency * 1000)}ms")
 
-@bot.slash_command(description='Provides stats for a player')
+@bot.slash_command(description='Total playtime for every account')
 async def stats(ctx):
     embed = discord.Embed(title="Stats" ,
                           description="Total playtime for each account",
@@ -210,22 +212,110 @@ async def info(ctx):
         fortnitestatus = "Running   :green_square:"
     if not fortnitewins.is_running():
         fortnitestatus = "Not running   :red_square:"
+    if mayorchannel.is_running():
+        mayorstatus = "Running   :green_square:"
+    if not mayorchannel.is_running():
+        mayorstatus = "Not running   :red_square:"
     embed = discord.Embed(title="Info",
     color=discord.Color.dark_purple()
     )
     embed.add_field(name="Status",
-    value=statusStatus
+
+    value=statusStatus,
+    inline=False
     )
     embed.add_field(name="Task keeper",
-    value=skillIssue)
+    value=skillIssue,
+    inline=False)
     embed.add_field(name="Fortnite Win Tracker",
     value=fortnitestatus,
+    inline=False)
+    embed.add_field(name="Mayorchannel",
+    value=mayorstatus,
     inline=False)
     await ctx.respond(embed=embed)
 
 @tasks.loop(hours=1)
 async def moyai():
-    user = await bot.get_user(dmuser)
-    await bot.send_message(user, ":moyai:")
+    #THIS DOES NOT WORK
+    userchnl = bot.get_channel(dmuser)
+    print(dmuser)
+    print(userchnl)
+    await userchnl.send(":moyai:")
+    
+
+
+@bot.slash_command(description="Start the mayor channel")
+async def mayorchannelstart(ctx):
+    global mayorchannelid
+    mayorchannelid1 = bot.get_channel(mayorchannelid)
+    parse_mayorapi = mayorapi()
+    lastupdated = parse_mayorapi['lastUpdated']
+    if mayorchannel.is_running():
+        await ctx.respond("The mayor channel loop is currently running!")
+    elif not mayorchannel.is_running():
+        await ctx.respond("Done!")
+        await mayorchannel.start()
+mayorruncount = 0
+
+@tasks.loop(minutes=15)
+async def mayorchannel():
+    parse_mayorapi = mayorapi()
+    global mayorchannelid
+    global mayorruncount
+    mayorchannelid1 = bot.get_channel(mayorchannelid)
+    lastupdated = parse_mayorapi['lastUpdated']
+    if mayorruncount == 0:
+        embed = discord.Embed(title="The current mayor is: "+ parse_mayorapi['mayor']['name'] + "(" + parse_mayorapi['mayor']['key'] + ")",
+        color=discord.Color.dark_gold())
+        currentmayor_perks = parse_mayorapi['mayor']['perks']
+        embed.add_field(name="Perks",
+        value="",
+        inline=False)
+        for index, aa in enumerate(currentmayor_perks):
+            perks = parse_mayorapi['mayor']['perks'][index]['description']
+            perks = perks.replace("§a","")
+            perks = perks.replace("§7","")
+            perks = perks.replace("§9","")
+            perks = perks.replace("§e","")
+            perks = perks.replace("§5","")
+            embed.add_field(name=parse_mayorapi['mayor']['perks'][index]['name'],
+            value=perks,
+            inline=True)
+        lastupdated = str(lastupdated)[:-3]
+        embed.add_field(name="Last Updated",
+        value="<t:"+ str(lastupdated) + ":R>",
+        inline=False)
+        print(mayorruncount)
+        mayorruncount =+ 1
+        print(mayorruncount)
+        await mayorchannelid1.send(embed=embed)
+        global lastmessage
+        lastmessage = bot.get_message(mayorchannelid1.last_message_id)
+    if mayorruncount > 0:
+        embed = discord.Embed(title="The current mayor is: "+ parse_mayorapi['mayor']['name'] + "(" + parse_mayorapi['mayor']['key'] + ")",
+        color=discord.Color.dark_gold())
+        currentmayor_perks = parse_mayorapi['mayor']['perks']
+        embed.add_field(name="Perks",
+        value="",
+        inline=False)
+        for index, aa in enumerate(currentmayor_perks):
+            perks = parse_mayorapi['mayor']['perks'][index]['description']
+            perks = perks.replace("§a","")
+            perks = perks.replace("§7","")
+            perks = perks.replace("§9","")
+            perks = perks.replace("§e","")
+            perks = perks.replace("§5","")
+            embed.add_field(name=parse_mayorapi['mayor']['perks'][index]['name'],
+            value=perks,
+            inline=True)
+        lastupdated = str(lastupdated)[:-3]
+        embed.add_field(name="Last Updated",
+        value="<t:"+ str(lastupdated) + ":R>",
+        inline=False)
+        graphurl = mayorgraphing()
+        embed.set_image(url=graphurl)
+        mayorruncount =+ 1
+        await lastmessage.edit(embed=embed)
 
 bot.run(KEY)

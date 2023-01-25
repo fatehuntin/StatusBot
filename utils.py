@@ -1,6 +1,9 @@
 from config import api_key, fortniteid, fortnitekey
 import requests
 import json
+import matplotlib.pyplot as plt; plt.rcdefaults()
+import numpy as np
+import matplotlib.pyplot as plt
 
 firstrun = False
 def timestamper(epochin):
@@ -89,3 +92,50 @@ def fortniteapi():
     apidata_fortnite = API_data_fortnite.text
     parse_json_apidata_fortnite = json.loads(apidata_fortnite)
     return parse_json_apidata_fortnite
+
+def mayorapi():
+    mayor_apidata = requests.get('https://api.hypixel.net/resources/skyblock/election')
+    mayorapi = mayor_apidata.text
+    parse_mayorapi = json.loads(mayorapi)
+    return parse_mayorapi
+
+def mayorgraphing():
+    objectslist = []
+    performance = []
+    mayorcolorlist = []
+    mayor_apidata = requests.get('https://api.hypixel.net/resources/skyblock/election')
+    mayorapi = mayor_apidata.text
+    parse_mayorapi = json.loads(mayorapi)
+    candidate_names_api = parse_mayorapi['current']['candidates']
+    for index, aeaea in enumerate(candidate_names_api):
+        objectslist.append(parse_mayorapi['current']['candidates'][index]['name'])
+        performance.append(parse_mayorapi['current']['candidates'][index]['votes'])
+    for index, nuts in enumerate(objectslist):
+        if objectslist[index] == "Marina":
+            mayorcolorlist.append('blue')
+        if objectslist[index] == "Paul":
+            mayorcolorlist.append('orange')
+        if objectslist[index] == "Cole":
+            mayorcolorlist.append('black')
+        if objectslist[index] == "Finnegan":
+            mayorcolorlist.append('green')
+        if objectslist[index] == "Jerry":
+            mayorcolorlist.append('pink')
+    """if sum(performance) > 100000:
+        modifier="00k"
+        print(sum(performance))
+        for index, aa in enumerate(performance):
+            performance[index]=performance[index]/100000"""
+    if sum(performance) > 100:
+        # sum(performance) > 100000:
+            #pass
+        modifier="k"
+        for index, aa in enumerate(performance):
+            performance[index]=performance[index]/1000
+
+    
+
+    graphurl = f"https://image-charts.com/chart?&chco=CFECF7%2C27c9c2&chd=t:{performance[0]},{performance[1]},{performance[2]},{performance[3]},{performance[4]}&chs=700x300&cht=bvs&chtt=SkyBlock%20Mayor%20Votes&chxl=0%3A|{objectslist[0]}|{objectslist[1]}|{objectslist[2]}|{objectslist[3]}|{objectslist[4]}&chxs=1N*2s*{modifier},000000&chxt=x,y&chg=20,50,5,5,CECECE"
+    return graphurl
+    
+=======
