@@ -1,7 +1,22 @@
-from main import bot
+from discord.ext import tasks, commands
+import discord
+
+description = """
+Status Bot
+https://github.com/fatehuntin/StatusBot
+"""
+intents = discord.Intents.default()
+intents.members = True
+intents.message_content = True
+bot = commands.Bot(
+    command_prefix= "~",
+    description = description,
+    intents = intents,
+)
 @bot.slash_command(description="Get statuses and general info of the bot")
 async def info(ctx):
-    if status.is_running():
+    print("Balls")
+    """if status.is_running():
         statusStatus = "Running   :green_square:"
     if not status.is_running():
         statusStatus = "Not running   :red_square:"
@@ -37,7 +52,8 @@ async def info(ctx):
     embed.add_field(name="Ping",
     value="{int(bot.latency * 1000)}ms",
     inline=False)
-    await ctx.respond(embed=embed)
+    await ctx.respond(embed=embed)"""
     
 def setup(bot):
     print("Loading info")
+    bot.(info)

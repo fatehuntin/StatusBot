@@ -1,4 +1,3 @@
-import discord
 import asyncio
 import time
 import logging
@@ -6,7 +5,21 @@ from discord.ext import tasks
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime
 from utils import timestamper, hypixelapi
 from totaltime import totaltime
+from discord.ext import tasks, commands
+import discord
 
+description = """
+Status Bot
+https://github.com/fatehuntin/StatusBot
+"""
+intents = discord.Intents.default()
+intents.members = True
+intents.message_content = True
+bot = commands.Bot(
+    command_prefix= "~",
+    description = description,
+    intents = intents,
+)
 
 @tasks.loop(seconds=3)
 async def status():

@@ -1,4 +1,19 @@
-from main import bot
+from discord.ext import tasks, commands
+import discord
+from utils import fortniteapi
+
+description = """
+Status Bot
+https://github.com/fatehuntin/StatusBot
+"""
+intents = discord.Intents.default()
+intents.members = True
+intents.message_content = True
+bot = commands.Bot(
+    command_prefix= "~",
+    description = description,
+    intents = intents,
+)
 parse_fortnite_api = fortniteapi()
 wins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
 @tasks.loop(seconds=10)

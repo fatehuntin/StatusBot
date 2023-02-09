@@ -1,4 +1,18 @@
-from main import bot
+from discord.ext import tasks, commands
+import discord
+
+description = """
+Status Bot
+https://github.com/fatehuntin/StatusBot
+"""
+intents = discord.Intents.default()
+intents.members = True
+intents.message_content = True
+bot = commands.Bot(
+    command_prefix= "~",
+    description = description,
+    intents = intents,
+)
 @bot.slash_command(description='Total playtime for every account')
 async def playtime(ctx):
     embed = discord.Embed(title="Stats" ,

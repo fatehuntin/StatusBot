@@ -1,5 +1,19 @@
-from main import bot
-@bot.slash_command(description="Tech support for the tech support loop")
+from discord.ext import tasks, commands
+import discord
+
+description = """
+Status Bot
+https://github.com/fatehuntin/StatusBot
+"""
+intents = discord.Intents.default()
+intents.members = True
+intents.message_content = True
+bot = commands.Bot(
+    command_prefix= "~",
+    description = description,
+    intents = intents,
+)
+@commands.command(description="Tech support for the tech support loop")
 async def tech_support(ctx):
     restoremyfaithinhumanity.start()
     await ctx.respond("All functions started!")
@@ -37,3 +51,5 @@ async def restoremyfaithinhumanity():
 
 def setup(bot):
     print("Loading housekeeping")
+    bot.add_command(tech_support)
+    print("Done!")

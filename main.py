@@ -18,17 +18,20 @@ bot = commands.Bot(
     description = description,
     intents = intents,
 )
+
+bot.load_extension("info")
+bot.load_extension("status")
+bot.load_extension("fortnitewins")
+bot.load_extension("playtime")
+bot.load_extension("housekeeping")
+bot.load_extension("mayorchannel")
+bot.
 @bot.event
 async def on_ready():
     logchannel = bot.get_channel(loggingchannel)
-    await logchannel.send("STARTED")
-    await bot.sync_commands()
+    await logchannel.send("Im Gay")
     await logchannel.edit(content="")
-    bot.load_extension("status")
-    bot.load_extension("info")
-    bot.load_extension("fortnitewins")
-    bot.load_extension("playtime")
-    bot.load_extension("housekeeping")
+    await bot.sync_commands()
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('-------------------------------------------------')
 online_list = []
@@ -43,79 +46,5 @@ for index, x in enumerate(uuid_list):
 gamers = []
 current_time = int(time.time())
 
-
-
-@bot.slash_command(description="Start the mayor channel")
-async def mayorchannelstart(ctx):
-    global mayorchannelid
-    mayorchannelid1 = bot.get_channel(mayorchannelid)
-    parse_mayorapi = mayorapi()
-    lastupdated = parse_mayorapi['lastUpdated']
-    if mayorchannel.is_running():
-        await ctx.respond("The mayor channel loop is currently running!")
-    elif not mayorchannel.is_running():
-        await ctx.respond("Done!")
-        await mayorchannel.start()
-mayorruncount = 0
-
-@tasks.loop(minutes=15)
-async def mayorchannel():
-    parse_mayorapi = mayorapi()
-    global mayorchannelid
-    global mayorruncount
-    mayorchannelid1 = bot.get_channel(mayorchannelid)
-    lastupdated = parse_mayorapi['lastUpdated']
-    if mayorruncount == 0:
-        embed = discord.Embed(title="The current mayor is: "+ parse_mayorapi['mayor']['name'] + "(" + parse_mayorapi['mayor']['key'] + ")",
-        color=discord.Color.dark_gold())
-        currentmayor_perks = parse_mayorapi['mayor']['perks']
-        embed.add_field(name="Perks",
-        value="",
-        inline=False)
-        for index, aa in enumerate(currentmayor_perks):
-            perks = parse_mayorapi['mayor']['perks'][index]['description']
-            perks = perks.replace("§a","")
-            perks = perks.replace("§7","")
-            perks = perks.replace("§9","")
-            perks = perks.replace("§e","")
-            perks = perks.replace("§5","")
-            embed.add_field(name=parse_mayorapi['mayor']['perks'][index]['name'],
-            value=perks,
-            inline=True)
-        lastupdated = str(lastupdated)[:-3]
-        embed.add_field(name="Last Updated",
-        value="<t:"+ str(lastupdated) + ":R>",
-        inline=False)
-        print(mayorruncount)
-        mayorruncount =+ 1
-        print(mayorruncount)
-        await mayorchannelid1.send(embed=embed)
-        global lastmessage
-        lastmessage = bot.get_message(mayorchannelid1.last_message_id)
-    if mayorruncount > 0:
-        embed = discord.Embed(title="The current mayor is: "+ parse_mayorapi['mayor']['name'] + "(" + parse_mayorapi['mayor']['key'] + ")",
-        color=discord.Color.dark_gold())
-        currentmayor_perks = parse_mayorapi['mayor']['perks']
-        embed.add_field(name="Perks",
-        value="",
-        inline=False)
-        for index, aa in enumerate(currentmayor_perks):
-            perks = parse_mayorapi['mayor']['perks'][index]['description']
-            perks = perks.replace("§a","")
-            perks = perks.replace("§7","")
-            perks = perks.replace("§9","")
-            perks = perks.replace("§e","")
-            perks = perks.replace("§5","")
-            embed.add_field(name=parse_mayorapi['mayor']['perks'][index]['name'],
-            value=perks,
-            inline=True)
-        lastupdated = str(lastupdated)[:-3]
-        embed.add_field(name="Last Updated",
-        value="<t:"+ str(lastupdated) + ":R>",
-        inline=False)
-        graphurl = mayorgraphing()
-        embed.set_image(url=graphurl)
-        mayorruncount =+ 1
-        await lastmessage.edit(embed=embed)
 
 bot.run(KEY)
