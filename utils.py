@@ -1,6 +1,8 @@
 from config import api_key, fortniteid, fortnitekey
 import requests
 import json
+import time
+
 
 firstrun = False
 def timestamper(epochin):
@@ -122,7 +124,9 @@ def mayorgraphing():
     graphurl = f"https://image-charts.com/chart?&chco={mayorcolorlist[0]}|{mayorcolorlist[1]}|{mayorcolorlist[2]}|{mayorcolorlist[3]}|{mayorcolorlist[4]}&chd=t:{performance[0]},{performance[1]},{performance[2]},{performance[3]},{performance[4]}&chs=700x300&cht=bvs&chtt=SkyBlock%20Mayor%20Votes&chxl=0%3A|{objectslist[0]}|{objectslist[1]}|{objectslist[2]}|{objectslist[3]}|{objectslist[4]}&chxs=1N*2s*{modifier},000000&chxt=x,y&chg=20,50,5,5,CECECE"
     return graphurl
 
-def skyblocktime(epoch):
-    startingtime = 1560275700
+def skyblocktime():
+    startingtime = 1676782500 #year 261 new years
     sbyear = 446400
-    1674986214
+    currenttime = int(time.time())
+    currentsbyear = (currenttime - startingtime)/sbyear
+    return currentsbyear
