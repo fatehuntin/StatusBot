@@ -19,13 +19,12 @@ bot = commands.Bot(
     intents = intents,
 )
 
-bot.load_extension("info")
+
 bot.load_extension("status")
 bot.load_extension("fortnitewins")
 bot.load_extension("playtime")
 bot.load_extension("housekeeping")
 bot.load_extension("mayorchannel")
-bot.
 @bot.event
 async def on_ready():
     logchannel = bot.get_channel(loggingchannel)
@@ -46,5 +45,5 @@ for index, x in enumerate(uuid_list):
 gamers = []
 current_time = int(time.time())
 
-
+bot.load_extension("info")
 bot.run(KEY)

@@ -1,4 +1,4 @@
-from discord.ext import tasks, commands
+from discord.ext import tasks, commands, bridge
 import discord
 
 description = """
@@ -8,12 +8,12 @@ https://github.com/fatehuntin/StatusBot
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
-bot = commands.Bot(
+bot = bridge.Bot(
     command_prefix= "~",
     description = description,
     intents = intents,
 )
-@bot.slash_command(description="Get statuses and general info of the bot")
+@bot.bridge_command(description="Get statuses and general info of the bot")
 async def info(ctx):
     print("Balls")
     """if status.is_running():
@@ -56,4 +56,4 @@ async def info(ctx):
     
 def setup(bot):
     print("Loading info")
-    bot.(info)
+    bot.add_command("info")
