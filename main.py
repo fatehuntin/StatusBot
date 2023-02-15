@@ -343,12 +343,36 @@ async def itemsearch(ctx, item:discord.Option(str), player:discord.Option(str), 
         except Exception:
             await ctx.respond("Api error, try again")
     else:
-        try:
-            itemapi = skycryptapi_current(player)
-            location = itemapi[0]['highest_rarity_sword']['display_name']
-            await ctx.respond(location)
-        except Exception:
-            await ctx.respond("Api error, try again")
+        #try:
+        if True:
+            location="Error"
+            itemapi = skycryptapi_current(player)[0]
+            if str(itemapi).find(item):
+                print("player has item")
+                location = "Item found on player but not in any normal inventories"
+                if str(itemapi['inventory']).find(item):
+                    print("item in inventory")
+                    location = "Item is in player inventory"
+                    for x in itemapi['inventory']:
+                        print(itemapi['inventory'][x]['display_name'])
+                    await ctx.respond(location)
+                elif str(itemapi['enderchest']).find(item):
+                    location= "Item is in enderchest"
+                    await ctx.respond(location)
+                elif str(itemapi['personal_vault']).find(item):
+                    location= "Item is in personal vault (What?)"
+                    await ctx.respond(location)
+                elif str(itemapi['storage']).find(item):
+                    location = "Item is in storage but cannot be found in a backpack"
+                    for bp in itemapi['storage']:
+                        print(bp)
+                        if str(itemapi['storage'][bp]).find(item):
+                            location = f"Item is in backpack {bp+1}"
+                            await ctx.respond(location)
+
+            
+        #except Exception:
+            #await ctx.respond("Api error, try again")
         
     
 
