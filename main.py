@@ -2,9 +2,11 @@ import discord
 import asyncio
 import time
 import logging
+import json
+import requests
 from discord.ext import tasks, commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime, fortnitechannel, fortniteusername, dmuser, mayorchannelid
-from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, firstrun
+from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, skycryptapi_current, skycryptapi_profile
 from totaltime import totaltime
 description = """
 Status Bot
@@ -14,7 +16,6 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 bot = commands.Bot(
-    command_prefix= "~",
     description = description,
     intents = intents,
 )
@@ -318,4 +319,48 @@ async def mayorchannel():
         mayorruncount =+ 1
         await lastmessage.edit(embed=embed)
 
+async def get_profile_names(ctx: discord.AutocompleteContext):
+    player_name = ctx.options['player']
+    profile_list = []
+    await asyncio.sleep(1)
+    try: 
+        API_data_skycrypt_current = requests.get('https://sky.shiiyu.moe/api/v2/profile/' + player_name)
+    except Exception:
+        pass
+    apidata_skycrypt_current = API_data_skycrypt_current.text
+    parse_json_apidata_skycrypt_current = json.loads(apidata_skycrypt_current)
+    for profile in parse_json_apidata_skycrypt_current['profiles']:
+        cute_name = parse_json_apidata_skycrypt_current['profiles'][profile]['cute_name']
+        profile_list.append(cute_name)
+    return profile_list
+@bot.slash_command(description="search for an item on a profile")
+async def itemsearch(ctx, item:discord.Option(str), player:discord.Option(str), profile:discord.Option(str,required = False ,autocomplete=discord.utils.basic_autocomplete(get_profile_names))):
+    if profile:
+        try:
+            itemapi = skycryptapi_profile(player,profile)
+            location = itemapi[0]['highest_rarity_sword']['display_name']
+            await ctx.respond(location)
+        except Exception:
+            await ctx.respond("Api error, try again")
+    else:
+        try:
+            itemapi = skycryptapi_current(player)
+            location = itemapi[0]['highest_rarity_sword']['display_name']
+            await ctx.respond(location)
+        except Exception:
+            await ctx.respond("Api error, try again")
+        
+    
+
+
+
+"""
+type in username "player" var
+search api for all the cute names of profiles on this account
+wait 2 seconds per request to be nice to api + ratelimits
+add options as profile names for "profile" var
+also just autoselect profile if profile is not defined
+
+
+"""
 bot.run(KEY)
