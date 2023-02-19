@@ -6,7 +6,7 @@ import json
 import requests
 from discord.ext import tasks, commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime, fortnitechannel, fortniteusername, dmuser, mayorchannelid
-from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, skycryptapi_current, skycryptapi_profile
+from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, skycryptapi_current, skycryptapi_profile, findWholeWord
 from totaltime import totaltime
 description = """
 Status Bot
@@ -347,29 +347,26 @@ async def itemsearch(ctx, item:discord.Option(str), player:discord.Option(str), 
         if True:
             location="Error"
             itemapi = skycryptapi_current(player)[0]
-            if str(itemapi).find(item):
-                print("player has item")
+            if findWholeWord(item)(str(itemapi)):
                 location = "Item found on player but not in any normal inventories"
-                if str(itemapi['inventory']).find(item):
+                if findWholeWord(item)(str(itemapi['inventory'])):
                     print("item in inventory")
                     location = "Item is in player inventory"
-                    for x in itemapi['inventory']:
-                        print(itemapi['inventory'][x]['display_name'])
                     await ctx.respond(location)
-                elif str(itemapi['enderchest']).find(item):
+                elif findWholeWord(item)(str(itemapi['enderchest'])):
                     location= "Item is in enderchest"
                     await ctx.respond(location)
-                elif str(itemapi['personal_vault']).find(item):
+                elif findWholeWord(item)(str(itemapi['personal_vault'])):
                     location= "Item is in personal vault (What?)"
                     await ctx.respond(location)
-                elif str(itemapi['storage']).find(item):
+                elif findWholeWord(item)(str(itemapi['storage'])):
                     location = "Item is in storage but cannot be found in a backpack"
-                    for bp in itemapi['storage']:
-                        print(bp)
-                        if str(itemapi['storage'][bp]).find(item):
-                            location = f"Item is in backpack {bp+1}"
+                    iteration = 0
+                    for x in itemapi['storage']:
+                        if findWholeWord(item)(str(itemapi['storage'][iteration])):
+                            location = f"Item is in backpack {iteration+1}"
                             await ctx.respond(location)
-
+                        iteration = iteration + 1
             
         #except Exception:
             #await ctx.respond("Api error, try again")
