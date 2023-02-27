@@ -2,9 +2,11 @@ import discord
 import asyncio
 import time
 import logging
+import json
+import requests
 from discord.ext import tasks, commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime, fortnitechannel, fortniteusername, dmuser, mayorchannelid
-from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, firstrun
+from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, skycryptapi_current, skycryptapi_profile, findWholeWord
 from totaltime import totaltime
 description = """
 Status Bot
@@ -14,7 +16,6 @@ intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 bot = commands.Bot(
-    command_prefix= "~",
     description = description,
     intents = intents,
 )
@@ -317,5 +318,57 @@ async def mayorchannel():
         embed.set_image(url=graphurl)
         mayorruncount =+ 1
         await lastmessage.edit(embed=embed)
+
+async def get_profile_names(ctx: discord.AutocompleteContext):
+    player_name = ctx.options['player']
+    profile_list = []
+    await asyncio.sleep(1)
+    try: 
+        API_data_skycrypt_current = requests.get('https://sky.shiiyu.moe/api/v2/profile/' + player_name)
+    except Exception:
+        pass
+    apidata_skycrypt_current = API_data_skycrypt_current.text
+    parse_json_apidata_skycrypt_current = json.loads(apidata_skycrypt_current)
+    for profile in parse_json_apidata_skycrypt_current['profiles']:
+        cute_name = parse_json_apidata_skycrypt_current['profiles'][profile]['cute_name']
+        profile_list.append(cute_name)
+    return profile_list
+@bot.slash_command(description="search for an item on a profile")
+async def itemsearch(ctx, item:discord.Option(str), player:discord.Option(str), profile:discord.Option(str,required = False ,autocomplete=discord.utils.basic_autocomplete(get_profile_names))):
+    if profile:
+        try:
+            itemapi = skycryptapi_profile(player,profile)
+            location = itemapi[0]['highest_rarity_sword']['display_name']
+            await ctx.respond(location)
+        except Exception:
+            await ctx.respond("Api error, try again")
+    else:
+        #try:
+        if True:
+            location="Error"
+            itemapi = skycryptapi_current(player)[0]
+            if findWholeWord(item)(str(itemapi)):
+                location = "Item found on player but not in any normal inventories"
+                if findWholeWord(item)(str(itemapi['inventory'])):
+                    print("item in inventory")
+                    location = "Item is in player inventory"
+                    await ctx.respond(location)
+                elif findWholeWord(item)(str(itemapi['enderchest'])):
+                    location= "Item is in enderchest"
+                    await ctx.respond(location)
+                elif findWholeWord(item)(str(itemapi['personal_vault'])):
+                    location= "Item is in personal vault (What?)"
+                    await ctx.respond(location)
+                elif findWholeWord(item)(str(itemapi['storage'])):
+                    location = "Item is in storage but cannot be found in a backpack"
+                    iteration = 0
+                    for x in itemapi['storage']:
+                        if findWholeWord(item)(str(itemapi['storage'][iteration])):
+                            location = f"Item is in backpack {iteration+1}"
+                            await ctx.respond(location)
+                        iteration = iteration + 1
+            
+        #except Exception:
+            #await ctx.respond("Api error, try again")
 
 bot.run(KEY)
