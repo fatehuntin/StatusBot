@@ -370,18 +370,5 @@ async def itemsearch(ctx, item:discord.Option(str), player:discord.Option(str), 
             
         #except Exception:
             #await ctx.respond("Api error, try again")
-        
-    
 
-
-
-"""
-type in username "player" var
-search api for all the cute names of profiles on this account
-wait 2 seconds per request to be nice to api + ratelimits
-add options as profile names for "profile" var
-also just autoselect profile if profile is not defined
-
-
-"""
 bot.run(KEY)

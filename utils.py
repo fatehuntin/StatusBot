@@ -127,10 +127,10 @@ def mayorgraphing():
     return graphurl
 
 def skyblocktime():
-    startingtime = 1676782500 #year 261 new years
+    startingtime = 1676782500
     sbyear = 446400
     currenttime = int(time.time())
-    currentsbyear = (currenttime - startingtime)/sbyear
+    currentsbyear = (currenttime - startingtime)/sbyear + 262
     return currentsbyear
 
 
