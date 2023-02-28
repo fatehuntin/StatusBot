@@ -25,6 +25,8 @@ async def on_ready():
     await logchannel.send("STARTED")
     await bot.sync_commands()
     await logchannel.edit(content="")
+    await status.start()
+    await restoremyfaithinhumanity.start()
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('-------------------------------------------------')
 online_list = []
