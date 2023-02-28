@@ -25,8 +25,6 @@ async def on_ready():
     await logchannel.send("STARTED")
     await bot.sync_commands()
     await logchannel.edit(content="")
-    await status.start()
-    await restoremyfaithinhumanity.start()
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('-------------------------------------------------')
 online_list = []
@@ -44,7 +42,6 @@ gamers = []
 current_time = int(time.time())
 @tasks.loop(seconds=3)
 async def status():
-    print("status started")
     for index, uuid in enumerate(uuid_list):
         parse_json_apidata_hypixel = hypixelapi(uuid,api_key)
         channel = bot.get_channel(mainchannel)
@@ -88,7 +85,6 @@ async def status():
                 online_time = timestamper(current_time - last_online[index])
             else: 
                 online_time = ""
-        print("Status still going")
         if online_status[index] != online_list[index]:
             embed = discord.Embed(title=f"{username} is now {statusname}", colour=discord.Color.purple(),url=f"https://sky.shiiyu.moe/stats/{uuid_list[index]}")
             embed.set_thumbnail(url = "https://visage.surgeplay.com/head/" + str(uuid_list[index]))
@@ -117,7 +113,6 @@ async def status():
                     fp.write("]")
                     fp.close()
                 last_online[index] = current_time
-            print("A")
         else:
             pass
         if len(gamers) > 1:
@@ -128,7 +123,6 @@ async def status():
             await bot.change_presence(activity=discord.Game(name= separator.join(gamers) + " is online")) 
         elif len(gamers) == 0:
             await bot.change_presence(activity=discord.Game(name="No one is online"))
-        print("Status loop eneded")
         await asyncio.sleep(1)
 parse_fortnite_api = fortniteapi()
 wins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
@@ -184,7 +178,6 @@ async def tech_support(ctx):
 @tasks.loop(seconds=30)
 async def restoremyfaithinhumanity():
     #seems redundant, might fix everything killing itself instantly
-    print("Tech support loop started")
     logchannel = bot.get_channel(loggingchannel)
 
     if not status.is_running():
@@ -210,7 +203,6 @@ async def restoremyfaithinhumanity():
 
     else:
         pass
-    print("tech support loop finished")
     await asyncio.sleep(30)
 @bot.slash_command(description="Get statuses and general stats of the bot")
 async def info(ctx):
