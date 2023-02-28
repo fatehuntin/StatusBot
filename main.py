@@ -6,7 +6,7 @@ import json
 import requests
 from discord.ext import tasks, commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, offlineemoji, uptime, fortnitechannel, fortniteusername, dmuser, mayorchannelid
-from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, skycryptapi_current, skycryptapi_profile, findWholeWord
+from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, skycryptapi_current, skycryptapi_profile, findWholeWord, fakeapi
 from totaltime import totaltime
 description = """
 Status Bot
@@ -25,7 +25,6 @@ async def on_ready():
     await logchannel.send("STARTED")
     await bot.sync_commands()
     await logchannel.edit(content="")
-    
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('-------------------------------------------------')
 online_list = []
@@ -33,6 +32,8 @@ online_status =[]
 last_online = [0,0,0,0]
 channel = bot.get_channel(mainchannel)
 logchannel = bot.get_channel(loggingchannel)
+nextelection = 1677338100
+nextbooth = 1677449700 
 for index, x in enumerate(uuid_list):
     online_list.append('False')
     online_status.append(False)
@@ -42,7 +43,7 @@ current_time = int(time.time())
 @tasks.loop(seconds=3)
 async def status():
     for index, uuid in enumerate(uuid_list):
-        parse_json_apidata_hypixel = hypixelapi(uuid,api_key)
+        parse_json_apidata_hypixel = fakeapi() #hypixelapi(uuid,api_key)
         channel = bot.get_channel(mainchannel)
         logchannel = bot.get_channel(loggingchannel)
         current_time = int(time.time())
@@ -72,23 +73,29 @@ async def status():
             print(online_status[index], username, online_list[index], online_list,last_online)
             logging.debug(online_status[index], online_list[index], username, last_online[index], timestamper(current_time - last_online[index]))
         if online_status[index]:
-            statusname = "ONLINE " + onlineemoji
+            statusname = "ONLINE "
+            statusemoji = onlineemoji
             online_status[index] = 'True'
             online_time = ""
         if not online_status[index]:
-            statusname = "OFFLINE " + offlineemoji
+            statusname = "OFFLINE "
+            statusemoji = offlineemoji
             online_status[index] = 'False'
             if uptime:
-                online_time = " They were online for: " + timestamper(current_time - last_online[index])
+                online_time = timestamper(current_time - last_online[index])
             else: 
                 online_time = ""
         if online_status[index] != online_list[index]:
-            await channel.send(modifier[index] + username + " has been " + statusname + " since <t:" + str(current_time) + ":R>" + online_time)
+            embed = discord.Embed(title=f"{username} is now {statusname}", colour=discord.Color.purple(),url=f"https://sky.shiiyu.moe/stats/{uuid_list[index]}")
+            embed.set_thumbnail(url = "https://visage.surgeplay.com/head/" + str(uuid_list[index]))
+            embed.add_field(name=statusemoji,value=f"They have been online since <t:{str(current_time)}:R>")
+            if online_time:
+                embed.add_field(name= "They were online for:",value=online_time, inline=False)
+            await channel.send(embed=embed)
             online_list[index] = online_status[index]
             if online_status[index] == 'True':
                 gamers.append(username)
                 last_online[index] = current_time
-                print("writing", totaltime)
                 with open('totaltime.py', 'w+') as fp:
                     fp.write("totaltime = [")
                     for x in totaltime:
@@ -157,7 +164,6 @@ async def stats(ctx):
         else:
             statusEmoji = ":question:"
             onlineorno = "**SOMETHING BROKE PING NOLAN!!!!**\n"
-            print(online_status)
         embed.add_field(name=username + statusEmoji,
                         value=lastorsince + str(last_online[index]) + ":R> \n" + onlineorno + "Total time online: " + total_time,
                         inline=False)
@@ -167,7 +173,6 @@ async def stats(ctx):
 @bot.slash_command(description="Tech support for the tech support loop")
 async def tech_support(ctx):
     restoremyfaithinhumanity.start()
-    moyai.start()
     await ctx.respond("Why did you even need to use this command smh (noly is shit at coding)")
 
 @tasks.loop(seconds=30)
@@ -236,15 +241,6 @@ async def info(ctx):
     inline=False)
     await ctx.respond(embed=embed)
 
-@tasks.loop(hours=1)
-async def moyai():
-    #THIS DOES NOT WORK
-    userchnl = bot.get_channel(dmuser)
-    print(dmuser)
-    print(userchnl)
-    await userchnl.send(":moyai:")
-    
-
 
 @bot.slash_command(description="Start the mayor channel")
 async def mayorchannelstart(ctx):
@@ -258,8 +254,43 @@ async def mayorchannelstart(ctx):
         await ctx.respond("Done!")
         await mayorchannel.start()
 mayorruncount = 0
-
-@tasks.loop(minutes=15)
+class MyView(discord.ui.View):
+    @discord.ui.button(label="View perks", style=discord.ButtonStyle.primary, emoji="❓")
+    async def button_callback(self, button, interaction):
+        embed = discord.Embed(title="Perks of all the mayors in the current election",
+        color=discord.Color.dark_gold())
+        currentelectionperks = "HI"
+        mayors = ["1","2","3","4","5"]
+        canindex = int(0)
+        parse_mayorapi = mayorapi()
+        for x in mayors:
+            embed.add_field(name=f"**{parse_mayorapi['current']['candidates'][canindex]['name']}**",value="", inline=False)
+            for index, aa in enumerate(parse_mayorapi['current']['candidates'][canindex]['perks']):
+                perks = parse_mayorapi['current']['candidates'][canindex]['perks'][index]['description']
+                perks = perks.replace("§a","")
+                perks = perks.replace("§7","")
+                perks = perks.replace("§9","")
+                perks = perks.replace("§e","")
+                perks = perks.replace("§5","")
+                perks = perks.replace("§2","")
+                perks = perks.replace("§4","")
+                perks = perks.replace("§c","")
+                perks = perks.replace("§6","")
+                perks = perks.replace("§b","")
+                perks = perks.replace("§3","")
+                perks = perks.replace("§1","")
+                perks = perks.replace("§f","")
+                perks = perks.replace("§d","")
+                perks = perks.replace("§8","")
+                perks = perks.replace("§0","")
+                perks = "• " + parse_mayorapi['current']['candidates'][canindex]['perks'][index]['name'] + "\n" + perks 
+                #embed.add_field(name="", value=parse_mayorapi['current']['candidates'][canindex]['perks'][index]['name'], inline=False)
+                embed.add_field(name="",
+                value=perks,
+                inline=True)
+            canindex = canindex + 1
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+@tasks.loop(minutes=1)
 async def mayorchannel():
     parse_mayorapi = mayorapi()
     global mayorchannelid
@@ -273,29 +304,36 @@ async def mayorchannel():
         embed.add_field(name="Perks",
         value="",
         inline=False)
-        for index, aa in enumerate(currentmayor_perks):
-            perks = parse_mayorapi['mayor']['perks'][index]['description']
-            perks = perks.replace("§a","")
-            perks = perks.replace("§7","")
-            perks = perks.replace("§9","")
-            perks = perks.replace("§e","")
-            perks = perks.replace("§5","")
-            embed.add_field(name=parse_mayorapi['mayor']['perks'][index]['name'],
-            value=perks,
-            inline=True)
-        lastupdated = str(lastupdated)[:-3]
-        embed.add_field(name="Last Updated",
-        value="<t:"+ str(lastupdated) + ":R>",
-        inline=False)
-        print(mayorruncount)
         mayorruncount =+ 1
-        print(mayorruncount)
         await mayorchannelid1.send(embed=embed)
         global lastmessage
         lastmessage = bot.get_message(mayorchannelid1.last_message_id)
     if mayorruncount > 0:
         embed = discord.Embed(title="The current mayor is: "+ parse_mayorapi['mayor']['name'] + "(" + parse_mayorapi['mayor']['key'] + ")",
         color=discord.Color.dark_gold())
+        if parse_mayorapi['mayor']['name'] == "Aatrox":
+            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/a/a5/Aatrox.png/revision/latest?cb=20200915234840"
+        if parse_mayorapi['mayor']['name'] == "Cole":
+            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/b/b8/Cole.png/revision/latest?cb=20200921062534"
+        if parse_mayorapi['mayor']['name'] == "Diana":
+            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/5/5f/Diana.png/revision/latest?cb=20200912120658"
+        if parse_mayorapi['mayor']['name'] == "Diaz":
+            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/d/da/Diaz.png/revision/latest?cb=20200921063025"
+        if parse_mayorapi['mayor']['name'] == "Finnegan":
+            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/8/85/Finnegan.png/revision/latest?cb=20221118161611"
+        if parse_mayorapi['mayor']['name'] == "Foxy":
+            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/9/90/Foxy.png/revision/latest?cb=20200919054800"
+        if parse_mayorapi['mayor']['name'] == "Marina":
+            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/9/9d/Marina.png/revision/latest?cb=20200915234253"
+        if parse_mayorapi['mayor']['name'] == "Paul":
+            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/0/00/Paul.png/revision/latest?cb=20200921063037"
+        if parse_mayorapi['mayor']['name'] == "Jerry":
+            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/5/58/Villager.png/revision/latest?cb=20210805125409"
+        if parse_mayorapi['mayor']['name'] == "Derpy":
+            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/d/de/Derpy.png/revision/latest?cb=20210802153205"
+        if parse_mayorapi['mayor']['name'] == "Scorpius":
+            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/a/af/Scorpius.png/revision/latest?cb=20201017023156"
+        embed.set_thumbnail(url = currentmayorthumbnail)
         currentmayor_perks = parse_mayorapi['mayor']['perks']
         embed.add_field(name="Perks",
         value="",
@@ -307,17 +345,40 @@ async def mayorchannel():
             perks = perks.replace("§9","")
             perks = perks.replace("§e","")
             perks = perks.replace("§5","")
+            perks = perks.replace("§2","")
+            perks = perks.replace("§4","")
+            perks = perks.replace("§c","")
+            perks = perks.replace("§6","")
+            perks = perks.replace("§b","")
+            perks = perks.replace("§3","")
+            perks = perks.replace("§1","")
+            perks = perks.replace("§f","")
+            perks = perks.replace("§d","")
+            perks = perks.replace("§8","")
+            perks = perks.replace("§0","")
             embed.add_field(name=parse_mayorapi['mayor']['perks'][index]['name'],
             value=perks,
             inline=True)
+        global nextbooth
+        global nextelection
+        if nextelection < int(time.time()):
+            nextelection = nextelection + 446400
+        if nextbooth < int(time.time()):
+            nextbooth = nextbooth + 446400
         lastupdated = str(lastupdated)[:-3]
+        embed.add_field(name="Next election",
+        value="<t:"+ str(nextelection) + ":R>",
+        inline=False)
+        embed.add_field(name="next booth open",
+        value="<t:"+ str(nextbooth) + ":R>",
+        inline=False)
         embed.add_field(name="Last Updated",
         value="<t:"+ str(lastupdated) + ":R>",
         inline=False)
         graphurl = mayorgraphing()
         embed.set_image(url=graphurl)
         mayorruncount =+ 1
-        await lastmessage.edit(embed=embed)
+        await lastmessage.edit(embed=embed, view=MyView())
 
 async def get_profile_names(ctx: discord.AutocompleteContext):
     player_name = ctx.options['player']
@@ -350,7 +411,6 @@ async def itemsearch(ctx, item:discord.Option(str), player:discord.Option(str), 
             if findWholeWord(item)(str(itemapi)):
                 location = "Item found on player but not in any normal inventories"
                 if findWholeWord(item)(str(itemapi['inventory'])):
-                    print("item in inventory")
                     location = "Item is in player inventory"
                     await ctx.respond(location)
                 elif findWholeWord(item)(str(itemapi['enderchest'])):

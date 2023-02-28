@@ -111,7 +111,6 @@ def mayorgraphing():
         
     if sum(performance) > 100000:
         modifier="00k"
-        print(sum(performance))
         for index, aa in enumerate(performance):
             performance[index]=performance[index]/100000
     if sum(performance) > 100:
