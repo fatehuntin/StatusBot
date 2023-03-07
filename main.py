@@ -125,7 +125,7 @@ async def status():
             await bot.change_presence(activity=discord.Game(name="No one is online"))
         await asyncio.sleep(1)
 parse_fortnite_api = fortniteapi()
-wins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
+#wins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
 @tasks.loop(seconds=10)
 async def fortnitewins():
     global wins
@@ -431,4 +431,28 @@ async def itemsearch(ctx, item:discord.Option(str), player:discord.Option(str), 
         #except Exception:
             #await ctx.respond("Api error, try again")
 
+
+
+@bot.slash_command(description="Create an embed")
+async def embedmaker(ctx, channel:discord.Option(str), title:discord.Option(str),color:discord.Option(int),image:discord.Option(str), authorname:discord.Option(str,required = False), authorimg:discord.Option(str,required = False), thumbnail:discord.Option(str,required = False), texthead:discord.Option(str,required = False), text:discord.Option(str,required = False), footer:discord.Option(str,required = False)):
+    embed=discord.Embed(title=title,
+                        color=color)
+    if not authorimg:
+        authorimg="https://cdn.discordapp.com/attachments/996284607404200057/1082773804893347951/cbc20oz17dg71.png"
+    if authorname:
+        embed.set_author(name=authorname, icon_url=authorimg)
+    if thumbnail:
+        embed.set_thumbnail(url=thumbnail)
+    if texthead:
+        embed.add_field(name=texthead,
+                        value=text)
+    if footer:
+        embed.set_footer(text=footer)
+    if image:
+        embed.set_image(url=image)
+    chnl = bot.get_channel(str(channel))
+    await ctx.respond("Delete this after the embed appears \n If the embed doesnt appear something went wrong, either retry or change ur command")
+    await ctx.send(embed=embed)
 bot.run(KEY)
+
+
