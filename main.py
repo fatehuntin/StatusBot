@@ -1,15 +1,18 @@
-import discord
 import asyncio
-import time
-import logging
 import json
+import logging
+import time
+
+import discord
 import requests
 from discord.ext import tasks, commands
-from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, modifier, onlineemoji, \
-    offlineemoji, uptime, fortnitechannel, fortniteusername, dmuser, mayorchannelid
-from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, skycryptapi_current, \
-    skycryptapi_profile, findWholeWord, fakeapi
+from fastapi import FastAPI
+
+from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, onlineemoji, \
+    offlineemoji, uptime, fortnitechannel, fortniteusername, authlist, modused
 from totaltime import totaltime
+from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, skycryptapi_current, \
+    skycryptapi_profile, findWholeWord
 
 description = """
 Status Bot
@@ -22,6 +25,17 @@ bot = commands.Bot(
     description=description,
     intents=intents,
 )
+app = FastAPI()
+@app.post("/")
+def add_item(request: dict):
+    if request["auth"] in authlist:
+        index = uuid_list.index(request["uuid"])
+        whosonline[index] = request["player"]
+        verified_logins[index] = True
+        return {"status": "ok", "message": "Successfully authenticated!"}
+    else:
+        return {"status": "ok", "message": "Authentication failed!"}
+
 
 
 @bot.event
@@ -33,7 +47,8 @@ async def on_ready():
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('-------------------------------------------------')
 
-
+whosonline = []
+verified_logins = []
 online_list = []
 online_status = []
 last_online = [0, 0, 0, 0]
@@ -44,6 +59,8 @@ nextbooth = 1677449700
 for index, x in enumerate(uuid_list):
     online_list.append('False')
     online_status.append(False)
+    whosonline.append('')
+    verified_logins.append(False)
     last_online.append(int(time.time()))
 gamers = []
 current_time = int(time.time())
@@ -74,7 +91,6 @@ async def status():
             online_status[index] = parse_json_apidata_hypixel['session']['online']
         except Exception:
             logging.warning("API ERROR")
-            await logchannel.send("API error perhaps (I want to die)" + str(parse_json_apidata_hypixel))
             online_status[
                 index] = "Questionable variable assignment to make api drop a straight nuclear shit in my bed causing the whole program to erupt"
             pass
@@ -85,11 +101,13 @@ async def status():
                           timestamper(current_time - last_online[index]))
         if online_status[index]:
             statusname = "ONLINE "
+            statuscolour = discord.Color.green()
             statusemoji = onlineemoji
             online_status[index] = 'True'
             online_time = ""
         if not online_status[index]:
             statusname = "OFFLINE "
+            statuscolour = discord.Color.red()
             statusemoji = offlineemoji
             online_status[index] = 'False'
             if uptime:
@@ -97,12 +115,17 @@ async def status():
             else:
                 online_time = ""
         if online_status[index] != online_list[index]:
-            embed = discord.Embed(title=f"{username} is now {statusname}", colour=discord.Color.purple(),
+            embed = discord.Embed(title=f"{username} is now {statusname}", colour=statuscolour,
                                   url=f"https://sky.shiiyu.moe/stats/{uuid_list[index]}")
             embed.set_thumbnail(url="https://visage.surgeplay.com/head/" + str(uuid_list[index]))
             embed.add_field(name=statusemoji, value=f"They have been online since <t:{str(current_time)}:R>")
             if online_time:
                 embed.add_field(name="They were online for:", value=online_time, inline=False)
+            if modused[index]:
+                if verified_logins[index]:
+                    embed.add_field(name=f"{whosonline[index]} is now playing on {username}")
+                if not verified_logins[index]:
+                    await channel.send("@here")
             await channel.send(embed=embed)
             online_list[index] = online_status[index]
             if online_status[index] == 'True':
@@ -269,10 +292,6 @@ async def info(ctx):
 
 @bot.slash_command(description="Start the mayor channel")
 async def mayorchannelstart(ctx):
-    global mayorchannelid
-    mayorchannelid1 = bot.get_channel(mayorchannelid)
-    parse_mayorapi = mayorapi()
-    lastupdated = parse_mayorapi['lastUpdated']
     if mayorchannel.is_running():
         await ctx.respond("The mayor channel loop is currently running!")
     elif not mayorchannel.is_running():
