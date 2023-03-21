@@ -9,11 +9,7 @@ from discord.ext import tasks, commands
 from fastapi import FastAPI
 
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, onlineemoji, \
-<<<<<<< Updated upstream
-    offlineemoji, uptime, fortnitechannel, fortniteusername, authlist, modused
-=======
     offlineemoji, uptime, fortnitechannel, fortniteusername, authlist, modused, mayorchannelid, apiip
->>>>>>> Stashed changes
 from totaltime import totaltime
 from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, skycryptapi_current, \
     skycryptapi_profile, findWholeWord
@@ -47,11 +43,7 @@ async def on_ready():
     logchannel = bot.get_channel(loggingchannel)
     await logchannel.send("STARTED")
     await bot.sync_commands()
-<<<<<<< Updated upstream
-    await logchannel.edit(content="")
-=======
     await restoremyfaithinhumanity.start()
->>>>>>> Stashed changes
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('-------------------------------------------------')
 
@@ -66,11 +58,7 @@ nextelection = 1677338100
 nextbooth = 1677449700
 for index, x in enumerate(uuid_list):
     online_list.append('False')
-<<<<<<< Updated upstream
-    online_status.append(False)
-=======
     online_status.append('False')
->>>>>>> Stashed changes
     whosonline.append('')
     verified_logins.append(False)
     last_online.append(int(time.time()))
@@ -530,9 +518,6 @@ async def embedmaker(ctx, channel: discord.Option(str), title: discord.Option(st
         "Delete this after the embed appears \n If the embed doesnt appear something went wrong, either retry or change ur command")
     await ctx.send(embed=embed)
 
-
-<<<<<<< Updated upstream
-=======
 @tasks.loop(hours=24)
 async def progress():
     embed=discord.Embed(
@@ -541,5 +526,4 @@ async def progress():
 
     await channel.send(embed=embed)
 
->>>>>>> Stashed changes
 bot.run(KEY)
