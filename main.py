@@ -507,10 +507,10 @@ async def embedmaker(ctx, channel: discord.Option(str), title: discord.Option(st
 
 @tasks.loop(hours=24)
 async def progress():
-    embed=discord.Embed(
+    embed = discord.Embed(
         title="Daily progress update"
     )
-
+    #TODO: find a way to compare values and put it in utils.py then reuse it for button under status
     await channel.send(embed=embed)
 
 bot.run(KEY)
