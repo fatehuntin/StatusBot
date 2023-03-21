@@ -2,12 +2,11 @@ import asyncio
 import json
 import logging
 import time
-
+import uvicorn
 import discord
 import requests
 from discord.ext import tasks, commands
 from fastapi import FastAPI
-
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, onlineemoji, \
     offlineemoji, uptime, fortnitechannel, fortniteusername, authlist, modused, mayorchannelid, apiip
 from totaltime import totaltime
@@ -26,6 +25,11 @@ bot = commands.Bot(
     intents=intents,
 )
 app = FastAPI()
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host=apiip, port=8000, log_level="info")
+
 @app.post("/")
 def add_item(request: dict):
     if request["auth"] in authlist:
@@ -226,29 +230,11 @@ async def restoremyfaithinhumanity():
     logchannel = bot.get_channel(loggingchannel)
 
     if not status.is_running():
-        if not fortnitewins.is_running():
-            try:
-                fortnitewins.start()
-                status.start()
-            except Exception:
-                pass
-            await logchannel.send(
-                "Everything restarted, something catastrophic probably happened <@319574411579752459> \nThis can also just be the program starting")
-        if fortnitewins.is_running():
-            try:
-                status.start()
-            except Exception:
-                pass
-            await logchannel.send("Status restarted (Fuck api(probably))")
-    if not fortnitewins.is_running():
+        logging.warning("STATUS STOPPED FOR SOME REASON")
         try:
-            fortnitewins.start()
+            status.start()
         except Exception:
             pass
-        await logchannel.send("Fortnitewins restarted (it broke)")
-
-    else:
-        pass
     await asyncio.sleep(30)
 
 
