@@ -29,7 +29,7 @@ import nest_asyncio
 nest_asyncio.apply()
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host=apiip, port=8000, log_level="info", loop="asyncio")
+    uvicorn.run("main:app", host=apiip, port=8000, log_level="debug", loop="asyncio", log_config="logs.yaml")
 
 @app.post("/")
 def add_item(request: dict):

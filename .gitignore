@@ -8,3 +8,4 @@ totaltime.py
 .idea
 !requirements.txt
 *.txt
+logs.yaml
