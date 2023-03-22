@@ -6,3 +6,5 @@ test.py
 *.json
 totaltime.py
 .idea
+!requirements.txt
+*.txt
