@@ -69,7 +69,18 @@ for index, x in enumerate(uuid_list):
     last_online.append(int(time.time()))
 gamers = []
 current_time = int(time.time())
-
+if debug:
+    logging.basicConfig(
+        filename="logs.log",
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        level=logging.DEBUG,
+        datefmt='%Y-%m-%d %H:%M:%S')
+if not debug:
+    logging.basicConfig(
+        filename="logs.log",
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        level=logging.WARNING,
+        datefmt='%Y-%m-%d %H:%M:%S')
 
 @tasks.loop(seconds=3)
 async def status():
@@ -78,18 +89,6 @@ async def status():
         channel = bot.get_channel(mainchannel)
         logchannel = bot.get_channel(loggingchannel)
         current_time = int(time.time())
-        if debug:
-            logging.basicConfig(
-                filename="logs.log",
-                format='%(asctime)s %(levelname)-8s %(message)s',
-                level=logging.DEBUG,
-                datefmt='%Y-%m-%d %H:%M:%S')
-        if not debug:
-            logging.basicConfig(
-                filename="logs.log",
-                format='%(asctime)s %(levelname)-8s %(message)s',
-                level=logging.WARNING,
-                datefmt='%Y-%m-%d %H:%M:%S')
         if not parse_json_apidata_hypixel['success']:
             break
         try:
@@ -166,26 +165,6 @@ async def status():
         await asyncio.sleep(1)
 
 
-parse_fortnite_api = fortniteapi()
-
-
-# wins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
-@tasks.loop(seconds=10)
-async def fortnitewins():
-    global wins
-    parse_fortnite_api = fortniteapi()
-    try:
-        newwins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
-    except Exception:
-        logging.error("API ERROR")
-    fnchannel = bot.get_channel(fortnitechannel)
-    try:
-        if newwins > wins:
-            await fnchannel.send("BIG W " + fortniteusername + " GOT AN EPIC VICTORY ROYALE <@&1058524479959076975> ")
-            wins = newwins
-    except Exception:
-        print("Fuck api ig")
-
 
 @bot.slash_command(description="Sends the bot's latency.")
 async def ping(ctx):
@@ -228,14 +207,9 @@ async def tech_support(ctx):
 @tasks.loop(seconds=30)
 async def restoremyfaithinhumanity():
     # seems redundant, might fix everything killing itself instantly
-    logchannel = bot.get_channel(loggingchannel)
-
     if not status.is_running():
         logging.warning("STATUS STOPPED FOR SOME REASON")
-        try:
-            status.start()
-        except Exception:
-            pass
+        status.start()
     await asyncio.sleep(30)
 
 
