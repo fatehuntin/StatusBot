@@ -60,7 +60,6 @@ whosonline = []
 verified_logins = []
 online_list = []
 online_status = []
-olddata = []
 newdata = []
 last_online = [0, 0, 0, 0]
 channel = bot.get_channel(mainchannel)
@@ -73,6 +72,7 @@ for index, x in enumerate(uuid_list):
     whosonline.append('')
     verified_logins.append(False)
     last_online.append(int(time.time()))
+    newdata.append([0,0,0,0,0,0,0,0,0,0,0,0,0,0])
 gamers = []
 current_time = int(time.time())
 if debug:
@@ -495,6 +495,9 @@ async def progress():
     olddata = newdata
     newdata = []
     for index, x in enumerate(uuid_list):
+        embed = discord.Embed(
+            title=f"Daily progress update for{username_list[index]}"
+        )
         api = skycryptapi_current(uuid_list[index])[1]
         newdata.append([])
         newdata[index].append(int(api['levels']['taming']['xp']))  # 0
@@ -514,12 +517,11 @@ async def progress():
             newdata[index].append(int(api['slayers']['blaze']['xp']))  # 12
         newdata[index].append(int(api['dungeons']['catacombs']['level']['xp']))  # 13
         time.sleep(10)
-    for index, x in enumerate(uuid_list):
         for index1, y in enumerate(newdata[index]):
             if newdata[index][index1] > olddata[index][index1]:
-                embed.add_field(name=names[index], value=(newdata[index][index1] - olddata[index][index1]))
+                embed.add_field(name=names[index1], value=str(olddata[index][index1]) + "-->" + str(newdata[index][index1] - olddata[index][index1]), inline=False)
 
-    await channel.send(embed=embed)
+        await channel.send(embed=embed)
 
 
 bot.run(KEY)

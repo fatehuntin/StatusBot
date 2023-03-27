@@ -2,7 +2,6 @@ config.py
 .DS_store
 __pycache*
 logs.log
-test*
 *.json
 totaltime.py
 .idea
