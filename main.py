@@ -483,7 +483,7 @@ async def embedmaker(ctx, channel: discord.Option(str), title: discord.Option(st
     await ctx.send(embed=embed)
 
 #TODO make sure that this runs on the correct timeframe hours=24
-@tasks.loop(minute=30)
+@tasks.loop(minutes=30)
 async def progress():
     global newdata
     channel = bot.get_channel(mainchannel)
