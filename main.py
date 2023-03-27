@@ -48,7 +48,8 @@ async def on_ready():
     logchannel = bot.get_channel(loggingchannel)
     await logchannel.send("STARTED")
     await bot.sync_commands()
-    await restoremyfaithinhumanity.start()
+    await progress.start()
+    #await restoremyfaithinhumanity.start()
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('-------------------------------------------------')
 
@@ -56,6 +57,8 @@ whosonline = []
 verified_logins = []
 online_list = []
 online_status = []
+olddata = []
+newdata = []
 last_online = [0, 0, 0, 0]
 channel = bot.get_channel(mainchannel)
 logchannel = bot.get_channel(loggingchannel)
@@ -223,10 +226,6 @@ async def info(ctx):
         skillIssue = "Running   :green_square:"
     if not restoremyfaithinhumanity.is_running():
         skillIssue = "Not running   :red_square:"
-    if fortnitewins.is_running():
-        fortnitestatus = "Running   :green_square:"
-    if not fortnitewins.is_running():
-        fortnitestatus = "Not running   :red_square:"
     if mayorchannel.is_running():
         mayorstatus = "Running   :green_square:"
     if not mayorchannel.is_running():
@@ -241,9 +240,6 @@ async def info(ctx):
                     )
     embed.add_field(name="Task keeper",
                     value=skillIssue,
-                    inline=False)
-    embed.add_field(name="Fortnite Win Tracker",
-                    value=fortnitestatus,
                     inline=False)
     embed.add_field(name="Mayorchannel",
                     value=mayorstatus,
@@ -479,11 +475,66 @@ async def embedmaker(ctx, channel: discord.Option(str), title: discord.Option(st
         "Delete this after the embed appears \n If the embed doesnt appear something went wrong, either retry or change ur command")
     await ctx.send(embed=embed)
 
-@tasks.loop(hours=24)
+@tasks.loop(hours=1)
 async def progress():
+    channel = bot.get_channel(mainchannel)
     embed = discord.Embed(
         title="Daily progress update"
     )
+    newdata = []
+    olddata = []
+    for index, x in enumerate(uuid_list):
+        print(username_list[index])
+        api = skycryptapi_current(uuid_list[index])[1]
+        newdata.append([])
+        newdata[index].append(int(api['levels']['taming']['xp']))  # 0
+        newdata[index].append(int(api['levels']['farming']['xp']))  # 1
+        newdata[index].append(int(api['levels']['mining']['xp']))  # 2
+        newdata[index].append(int(api['levels']['combat']['xp']))  # 3
+        newdata[index].append(int(api['levels']['foraging']['xp']))  # 4
+        newdata[index].append(int(api['levels']['fishing']['xp']))  # 5
+        newdata[index].append(int(api['levels']['enchanting']['xp']))  # 6
+        newdata[index].append(int(api['levels']['alchemy']['xp']))  # 7
+        newdata[index].append(int(api['slayers']['zombie']['xp']))  # 8
+        newdata[index].append(int(api['slayers']['spider']['xp']))  # 9
+        newdata[index].append(int(api['slayers']['wolf']['xp']))  # 10
+        if api['slayers']['enderman']['level']['currentLevel'] != 0:
+            newdata[index].append(int(api['slayers']['enderman']['xp']))  # 11
+        if api['slayers']['blaze']['level']['currentLevel'] != 0:
+            newdata[index].append(int(api['slayers']['blaze']['xp']))  # 12
+        newdata[index].append(int(api['dungeons']['catacombs']['level']['xp']))  # 13
+        time.sleep(10)
+    olddata = newdata
+    newdata = []
+    for index, x in enumerate(uuid_list):
+        print(username_list[index])
+        api = skycryptapi_current(uuid_list[index])[1]
+        newdata.append([])
+        newdata[index].append(int(api['levels']['taming']['xp']))  # 0
+        newdata[index].append(int(api['levels']['farming']['xp']))  # 1
+        newdata[index].append(int(api['levels']['mining']['xp']))  # 2
+        newdata[index].append(int(api['levels']['combat']['xp']))  # 3
+        newdata[index].append(int(api['levels']['foraging']['xp']))  # 4
+        newdata[index].append(int(api['levels']['fishing']['xp']))  # 5
+        newdata[index].append(int(api['levels']['enchanting']['xp']))  # 6
+        newdata[index].append(int(api['levels']['alchemy']['xp']))  # 7
+        newdata[index].append(int(api['slayers']['zombie']['xp']))  # 8
+        newdata[index].append(int(api['slayers']['spider']['xp']))  # 9
+        newdata[index].append(int(api['slayers']['wolf']['xp']))  # 10
+        if api['slayers']['enderman']['level']['currentLevel'] != 0:
+            newdata[index].append(int(api['slayers']['enderman']['xp']))  # 11
+        if api['slayers']['blaze']['level']['currentLevel'] != 0:
+            newdata[index].append(int(api['slayers']['blaze']['xp']))  # 12
+        newdata[index].append(int(api['dungeons']['catacombs']['level']['xp']))  # 13
+        time.sleep(10)
+    print(newdata)
+    print(olddata)
+    for index, x in enumerate(uuid_list):
+        for index1, y in enumerate(newdata[index]):
+            if newdata[index][index1] > olddata[index][index1]:
+                embed.add_field(name=index1,value=(newdata[index][index1]-olddata[index][index1]))
+
+
     #TODO: find a way to compare values and put it in utils.py then reuse it for button under status
     await channel.send(embed=embed)
 

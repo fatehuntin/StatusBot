@@ -32,7 +32,6 @@ def hypixelapi(uuid,api_key):
         return parse_json_apidata_hypixel
 
 def skycryptapi_current(username):
-    print("API REQUEST")
     API_data_skycrypt_current = requests.get('https://sky.shiiyu.moe/api/v2/profile/' + username)
     apidata_skycrypt_current = API_data_skycrypt_current.text
     parse_json_apidata_skycrypt_current = json.loads(apidata_skycrypt_current)
