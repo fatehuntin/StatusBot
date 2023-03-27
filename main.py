@@ -2,15 +2,17 @@ import asyncio
 import json
 import logging
 import time
-import uvicorn
+
 import discord
 import requests
+import uvicorn
 from discord.ext import tasks, commands
 from fastapi import FastAPI
+
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, onlineemoji, \
-    offlineemoji, uptime, fortnitechannel, fortniteusername, authlist, modused, mayorchannelid, apiip
+    offlineemoji, uptime, authlist, modused, apiip
 from totaltime import totaltime
-from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, skycryptapi_current, \
+from utils import timestamper, hypixelapi, mayorapi, mayorgraphing, skycryptapi_current, \
     skycryptapi_profile, findWholeWord
 
 description = """
@@ -26,10 +28,12 @@ bot = commands.Bot(
 )
 app = FastAPI()
 import nest_asyncio
+
 nest_asyncio.apply()
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host=apiip, port=8000, log_level="debug", loop="asyncio")
+
 
 @app.post("/")
 def add_item(request: dict):
@@ -42,7 +46,6 @@ def add_item(request: dict):
         return {"status": "ok", "message": "Authentication failed!"}
 
 
-
 @bot.event
 async def on_ready():
     logchannel = bot.get_channel(loggingchannel)
@@ -51,6 +54,7 @@ async def on_ready():
     await restoremyfaithinhumanity.start()
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('-------------------------------------------------')
+
 
 whosonline = []
 verified_logins = []
@@ -84,8 +88,10 @@ if not debug:
         level=logging.WARNING,
         datefmt='%Y-%m-%d %H:%M:%S')
 
+#TODO add button under offline msg to view the progress made while the account was online
 @tasks.loop(seconds=3)
 async def status():
+    global statusname, statuscolour, statusemoji, online_time, online_time
     for index, uuid in enumerate(uuid_list):
         parse_json_apidata_hypixel = hypixelapi(uuid, api_key)
         channel = bot.get_channel(mainchannel)
@@ -166,8 +172,7 @@ async def status():
             await bot.change_presence(activity=discord.Game(name="No one is online"))
         await asyncio.sleep(1)
 
-
-
+#TODO put this in info
 @bot.slash_command(description="Sends the bot's latency.")
 async def ping(ctx):
     await ctx.respond(f"Pong! Latency is {int(bot.latency * 1000)}ms")
@@ -477,13 +482,16 @@ async def embedmaker(ctx, channel: discord.Option(str), title: discord.Option(st
         "Delete this after the embed appears \n If the embed doesnt appear something went wrong, either retry or change ur command")
     await ctx.send(embed=embed)
 
-@tasks.loop(hours=1)
+#TODO make sure that this runs on the correct timeframe hours=24
+@tasks.loop(minute=30)
 async def progress():
     global newdata
     channel = bot.get_channel(mainchannel)
     embed = discord.Embed(
         title="Daily progress update"
     )
+    names = ["Taming", "Farming", "Mining", "Combat", "Foraging", "Fishing", "Enchanting", "Alchemy", "Zombie Slayer",
+             "Spider Slayer", "Wolf Slayer", "Enderman Slayer", "Blaze Slayer", "Catacombs"]
     olddata = newdata
     newdata = []
     for index, x in enumerate(uuid_list):
@@ -509,10 +517,9 @@ async def progress():
     for index, x in enumerate(uuid_list):
         for index1, y in enumerate(newdata[index]):
             if newdata[index][index1] > olddata[index][index1]:
-                embed.add_field(name=index1,value=(newdata[index][index1]-olddata[index][index1]))
+                embed.add_field(name=names[index], value=(newdata[index][index1] - olddata[index][index1]))
 
-
-    #TODO: find a way to compare values and put it in utils.py then reuse it for button under status
     await channel.send(embed=embed)
+
 
 bot.run(KEY)
