@@ -25,10 +25,10 @@ bot = commands.Bot(
 app = FastAPI()
 import nest_asyncio
 
-nest_asyncio.apply()
+#nest_asyncio.apply()
 
-if __name__ == "__main__":
-    uvicorn.run("main:app", host=apiip, port=8000, log_level="debug", loop="asyncio")
+#if __name__ == "__main__":
+    #uvicorn.run("main:app", host=apiip, port=8000, log_level="debug", loop="asyncio")
 
 
 @app.post("/")
