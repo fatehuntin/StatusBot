@@ -109,5 +109,3 @@ questions = [
 answers = prompt(questions, style=style)
 print('Order receipt:')
 pprint(answers)
-
-#TODO TIMER?

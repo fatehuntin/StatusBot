@@ -213,13 +213,20 @@ async def tech_support(ctx):
 
 @tasks.loop(seconds=30)
 async def restoremyfaithinhumanity():
+    logchannel = bot.get_channel(loggingchannel)
     # seems redundant, might fix everything killing itself instantly
     if not status.is_running():
         logging.warning("STATUS STOPPED FOR SOME REASON")
         status.start()
+        with open('logs.log', 'r+') as fp:
+            await logchannel.send(file=discord.File(fp, 'logs.log'))
+            fp.truncate(0)
     if not progress.is_running():
         logging.warning("progress stopped")
         progress.start()
+        with open('logs.log', 'r+') as fp:
+            await logchannel.send(file=discord.File(fp, 'logs.log'))
+            fp.truncate(0)
     await asyncio.sleep(30)
 
 
@@ -252,6 +259,9 @@ async def info(ctx):
     embed.add_field(name="Mayorchannel",
                     value=mayorstatus,
                     inline=False)
+
+    embed.add_field(name="Ping",
+                    value=f"Latency is {int(bot.latency * 1000)}ms")
     await ctx.respond(embed=embed)
 
 
@@ -483,8 +493,7 @@ async def embedmaker(ctx, channel: discord.Option(str), title: discord.Option(st
     await ctx.send(embed=embed)
 
 oldapi = ""
-# TODO make sure that this runs on the correct timeframe hours=24
-@tasks.loop(minutes=30)
+@tasks.loop(hours=24)
 async def progress():
     global newdata, oldapi, olddata
     channel = bot.get_channel(mainchannel)
@@ -521,7 +530,7 @@ async def progress():
         if api['slayers']['blaze']['level']['currentLevel'] != 0:
             newdata[daily_uuidindex].append(int(api['slayers']['blaze']['xp']))  # 12
         newdata[daily_uuidindex].append(int(api['dungeons']['catacombs']['level']['xp']))  # 13
-        time.sleep(10)
+        await asyncio.sleep(10)
         for index1, y in enumerate(newdata[daily_uuidindex]):
             if newdata[daily_uuidindex][index1] > olddata[daily_uuidindex][index1]:
                 send = True
@@ -530,6 +539,7 @@ async def progress():
                                     human_format(newdata[daily_uuidindex][index1] - olddata[daily_uuidindex][index1])),
                                 inline=False)
         if send:
-            await channel.send(embed=embed)
+            pass
+            #await channel.send(embed=embed)
 
 bot.run(KEY)
