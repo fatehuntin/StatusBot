@@ -32,7 +32,6 @@ def hypixelapi(uuid,api_key):
         return parse_json_apidata_hypixel
 
 def skycryptapi_current(username):
-    print("API REQUEST")
     API_data_skycrypt_current = requests.get('https://sky.shiiyu.moe/api/v2/profile/' + username)
     apidata_skycrypt_current = API_data_skycrypt_current.text
     parse_json_apidata_skycrypt_current = json.loads(apidata_skycrypt_current)
@@ -135,3 +134,13 @@ def skyblocktime():
 
 def findWholeWord(w):
     return re.compile(r'\b({0})\b'.format(w), flags=re.IGNORECASE).search
+
+
+#https://stackoverflow.com/questions/579310/formatting-long-numbers-as-strings/45846841#45846841
+def human_format(num):
+    num = float('{:.3g}'.format(num))
+    magnitude = 0
+    while abs(num) >= 1000:
+        magnitude += 1
+        num /= 1000.0
+    return '{}{}'.format('{:f}'.format(num).rstrip('0').rstrip('.'), ['', 'K', 'M', 'B', 'T'][magnitude])

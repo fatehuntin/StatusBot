@@ -2,44 +2,44 @@ import asyncio
 import json
 import logging
 import time
-
 import discord
 import requests
+import uvicorn
 from discord.ext import tasks, commands
 from fastapi import FastAPI
-
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, onlineemoji, \
-<<<<<<< Updated upstream
-    offlineemoji, uptime, fortnitechannel, fortniteusername, authlist, modused
-=======
-    offlineemoji, uptime, fortnitechannel, fortniteusername, authlist, modused, mayorchannelid, apiip
->>>>>>> Stashed changes
+    offlineemoji, uptime, authlist, modused, apiip
 from totaltime import totaltime
-from utils import timestamper, hypixelapi, fortniteapi, mayorapi, mayorgraphing, skycryptapi_current, \
-    skycryptapi_profile, findWholeWord
+from utils import timestamper, hypixelapi, mayorapi, mayorgraphing, skycryptapi_current, \
+    skycryptapi_profile, findWholeWord, human_format
 
 description = """
 Status Bot
 https://github.com/fatehuntin/StatusBot
 """
 intents = discord.Intents.default()
-intents.members = True
-intents.message_content = True
 bot = commands.Bot(
     description=description,
     intents=intents,
 )
 app = FastAPI()
+import nest_asyncio
+
+nest_asyncio.apply()
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host=apiip, port=8000, log_level="debug", loop="asyncio")
+
+
 @app.post("/")
 def add_item(request: dict):
     if request["auth"] in authlist:
-        index = uuid_list.index(request["uuid"])
-        whosonline[index] = request["player"]
-        verified_logins[index] = True
+        auth_uuidindex = uuid_list.index(request["uuid"])
+        whosonline[auth_uuidindex] = request["player"]
+        verified_logins[auth_uuidindex] = True
         return {"status": "ok", "message": "Successfully authenticated!"}
     else:
         return {"status": "ok", "message": "Authentication failed!"}
-
 
 
 @bot.event
@@ -47,18 +47,17 @@ async def on_ready():
     logchannel = bot.get_channel(loggingchannel)
     await logchannel.send("STARTED")
     await bot.sync_commands()
-<<<<<<< Updated upstream
-    await logchannel.edit(content="")
-=======
     await restoremyfaithinhumanity.start()
->>>>>>> Stashed changes
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('-------------------------------------------------')
+
 
 whosonline = []
 verified_logins = []
 online_list = []
 online_status = []
+newdata = []
+olddata = []
 last_online = [0, 0, 0, 0]
 channel = bot.get_channel(mainchannel)
 logchannel = bot.get_channel(loggingchannel)
@@ -66,37 +65,36 @@ nextelection = 1677338100
 nextbooth = 1677449700
 for index, x in enumerate(uuid_list):
     online_list.append('False')
-<<<<<<< Updated upstream
-    online_status.append(False)
-=======
     online_status.append('False')
->>>>>>> Stashed changes
     whosonline.append('')
     verified_logins.append(False)
     last_online.append(int(time.time()))
+    newdata.append([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 gamers = []
 current_time = int(time.time())
+if debug:
+    logging.basicConfig(
+        filename="logs.log",
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        level=logging.DEBUG,
+        datefmt='%Y-%m-%d %H:%M:%S')
+if not debug:
+    logging.basicConfig(
+        filename="logs.log",
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        level=logging.WARNING,
+        datefmt='%Y-%m-%d %H:%M:%S')
 
 
+# TODO add button under offline msg to view the progress made while the account was online
 @tasks.loop(seconds=3)
 async def status():
+    global statusname, statuscolour, statusemoji, online_time, online_time
     for index, uuid in enumerate(uuid_list):
         parse_json_apidata_hypixel = hypixelapi(uuid, api_key)
         channel = bot.get_channel(mainchannel)
         logchannel = bot.get_channel(loggingchannel)
         current_time = int(time.time())
-        if debug:
-            logging.basicConfig(
-                filename="logs.log",
-                format='%(asctime)s %(levelname)-8s %(message)s',
-                level=logging.DEBUG,
-                datefmt='%Y-%m-%d %H:%M:%S')
-        if not debug:
-            logging.basicConfig(
-                filename="logs.log",
-                format='%(asctime)s %(levelname)-8s %(message)s',
-                level=logging.WARNING,
-                datefmt='%Y-%m-%d %H:%M:%S')
         if not parse_json_apidata_hypixel['success']:
             break
         try:
@@ -129,7 +127,7 @@ async def status():
         if online_status[index] != online_list[index]:
             embed = discord.Embed(title=f"{username} is now {statusname}", colour=statuscolour,
                                   url=f"https://sky.shiiyu.moe/stats/{uuid_list[index]}")
-            embed.set_thumbnail(url="https://visage.surgeplay.com/head/" + str(uuid_list[index]))
+            embed.set_thumbnail(url="https://visage.surgeplay.com/head/" + str(uuid))
             embed.add_field(name=statusemoji, value=f"They have been online since <t:{str(current_time)}:R>")
             if online_time:
                 embed.add_field(name="They were online for:", value=online_time, inline=False)
@@ -173,27 +171,7 @@ async def status():
         await asyncio.sleep(1)
 
 
-parse_fortnite_api = fortniteapi()
-
-
-# wins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
-@tasks.loop(seconds=10)
-async def fortnitewins():
-    global wins
-    parse_fortnite_api = fortniteapi()
-    try:
-        newwins = parse_fortnite_api['data']['stats']['all']['overall']['wins']
-    except Exception:
-        logging.error("API ERROR")
-    fnchannel = bot.get_channel(fortnitechannel)
-    try:
-        if newwins > wins:
-            await fnchannel.send("BIG W " + fortniteusername + " GOT AN EPIC VICTORY ROYALE <@&1058524479959076975> ")
-            wins = newwins
-    except Exception:
-        print("Fuck api ig")
-
-
+# TODO put this in info
 @bot.slash_command(description="Sends the bot's latency.")
 async def ping(ctx):
     await ctx.respond(f"Pong! Latency is {int(bot.latency * 1000)}ms")
@@ -201,6 +179,7 @@ async def ping(ctx):
 
 @bot.slash_command(description='Total playtime for every account')
 async def stats(ctx):
+    global lastorsince
     embed = discord.Embed(title="Stats",
                           description="Total playtime for each account",
                           color=discord.Color.dark_purple())
@@ -234,38 +213,26 @@ async def tech_support(ctx):
 
 @tasks.loop(seconds=30)
 async def restoremyfaithinhumanity():
-    # seems redundant, might fix everything killing itself instantly
     logchannel = bot.get_channel(loggingchannel)
-
+    # seems redundant, might fix everything killing itself instantly
     if not status.is_running():
-        if not fortnitewins.is_running():
-            try:
-                fortnitewins.start()
-                status.start()
-            except Exception:
-                pass
-            await logchannel.send(
-                "Everything restarted, something catastrophic probably happened <@319574411579752459> \nThis can also just be the program starting")
-        if fortnitewins.is_running():
-            try:
-                status.start()
-            except Exception:
-                pass
-            await logchannel.send("Status restarted (Fuck api(probably))")
-    if not fortnitewins.is_running():
-        try:
-            fortnitewins.start()
-        except Exception:
-            pass
-        await logchannel.send("Fortnitewins restarted (it broke)")
-
-    else:
-        pass
+        logging.warning("STATUS STOPPED FOR SOME REASON")
+        status.start()
+        with open('logs.log', 'r+') as fp:
+            await logchannel.send(file=discord.File(fp, 'logs.log'))
+            fp.truncate(0)
+    if not progress.is_running():
+        logging.warning("progress stopped")
+        progress.start()
+        with open('logs.log', 'r+') as fp:
+            await logchannel.send(file=discord.File(fp, 'logs.log'))
+            fp.truncate(0)
     await asyncio.sleep(30)
 
 
 @bot.slash_command(description="Get statuses and general stats of the bot")
 async def info(ctx):
+    global skillIssue, mayorstatus, statusStatus
     if status.is_running():
         statusStatus = "Running   :green_square:"
     if not status.is_running():
@@ -274,10 +241,6 @@ async def info(ctx):
         skillIssue = "Running   :green_square:"
     if not restoremyfaithinhumanity.is_running():
         skillIssue = "Not running   :red_square:"
-    if fortnitewins.is_running():
-        fortnitestatus = "Running   :green_square:"
-    if not fortnitewins.is_running():
-        fortnitestatus = "Not running   :red_square:"
     if mayorchannel.is_running():
         mayorstatus = "Running   :green_square:"
     if not mayorchannel.is_running():
@@ -293,12 +256,12 @@ async def info(ctx):
     embed.add_field(name="Task keeper",
                     value=skillIssue,
                     inline=False)
-    embed.add_field(name="Fortnite Win Tracker",
-                    value=fortnitestatus,
-                    inline=False)
     embed.add_field(name="Mayorchannel",
                     value=mayorstatus,
                     inline=False)
+
+    embed.add_field(name="Ping",
+                    value=f"Latency is {int(bot.latency * 1000)}ms")
     await ctx.respond(embed=embed)
 
 
@@ -345,7 +308,6 @@ class MyView(discord.ui.View):
                 perks = perks.replace("§8", "")
                 perks = perks.replace("§0", "")
                 perks = "• " + parse_mayorapi['current']['candidates'][canindex]['perks'][index]['name'] + "\n" + perks
-                # embed.add_field(name="", value=parse_mayorapi['current']['candidates'][canindex]['perks'][index]['name'], inline=False)
                 embed.add_field(name="",
                                 value=perks,
                                 inline=True)
@@ -356,7 +318,7 @@ class MyView(discord.ui.View):
 @tasks.loop(minutes=1)
 async def mayorchannel():
     parse_mayorapi = mayorapi()
-    global mayorchannelid
+    global mayorchannelid, currentmayorthumbnail
     global mayorruncount
     mayorchannelid1 = bot.get_channel(mayorchannelid)
     lastupdated = parse_mayorapi['lastUpdated']
@@ -449,6 +411,7 @@ async def mayorchannel():
 
 
 async def get_profile_names(ctx: discord.AutocompleteContext):
+    global API_data_skycrypt_current
     player_name = ctx.options['player']
     profile_list = []
     await asyncio.sleep(1)
@@ -525,21 +488,58 @@ async def embedmaker(ctx, channel: discord.Option(str), title: discord.Option(st
         embed.set_footer(text=footer)
     if image:
         embed.set_image(url=image)
-    chnl = bot.get_channel(str(channel))
     await ctx.respond(
         "Delete this after the embed appears \n If the embed doesnt appear something went wrong, either retry or change ur command")
     await ctx.send(embed=embed)
 
-
-<<<<<<< Updated upstream
-=======
+oldapi = ""
 @tasks.loop(hours=24)
 async def progress():
-    embed=discord.Embed(
+    global newdata, oldapi, olddata
+    channel = bot.get_channel(mainchannel)
+    embed = discord.Embed(
         title="Daily progress update"
     )
+    names = ["Taming", "Farming", "Mining", "Combat", "Foraging", "Fishing", "Enchanting", "Alchemy", "Zombie Slayer",
+             "Spider Slayer", "Wolf Slayer", "Enderman Slayer", "Blaze Slayer", "Catacombs"]
+    olddata = newdata
+    newdata = []
 
-    await channel.send(embed=embed)
+    for daily_uuidindex, uuid in enumerate(uuid_list):
+        api = skycryptapi_current(uuid_list[daily_uuidindex])[1]
+        print(username_list[daily_uuidindex])
+        send = False
+        embed = discord.Embed(
+            title=f"Daily progress update for {username_list[daily_uuidindex]}"
+        )
+        embed.set_thumbnail(url="https://visage.surgeplay.com/head/" + str(uuid))
+        newdata.append([])
+        newdata[daily_uuidindex].append(int(api['levels']['taming']['xp']))  # 0
+        newdata[daily_uuidindex].append(int(api['levels']['farming']['xp']))  # 1
+        newdata[daily_uuidindex].append(int(api['levels']['mining']['xp']))  # 2
+        newdata[daily_uuidindex].append(int(api['levels']['combat']['xp']))  # 3
+        newdata[daily_uuidindex].append(int(api['levels']['foraging']['xp']))  # 4
+        newdata[daily_uuidindex].append(int(api['levels']['fishing']['xp']))  # 5
+        newdata[daily_uuidindex].append(int(api['levels']['enchanting']['xp']))  # 6
+        newdata[daily_uuidindex].append(int(api['levels']['alchemy']['xp']))  # 7
+        newdata[daily_uuidindex].append(int(api['slayers']['zombie']['xp']))  # 8
+        newdata[daily_uuidindex].append(int(api['slayers']['spider']['xp']))  # 9
+        newdata[daily_uuidindex].append(int(api['slayers']['wolf']['xp']))  # 10
+        if api['slayers']['enderman']['level']['currentLevel'] != 0:
+            newdata[daily_uuidindex].append(int(api['slayers']['enderman']['xp']))  # 11
+        if api['slayers']['blaze']['level']['currentLevel'] != 0:
+            newdata[daily_uuidindex].append(int(api['slayers']['blaze']['xp']))  # 12
+        newdata[daily_uuidindex].append(int(api['dungeons']['catacombs']['level']['xp']))  # 13
+        await asyncio.sleep(10)
+        for index1, y in enumerate(newdata[daily_uuidindex]):
+            if newdata[daily_uuidindex][index1] > olddata[daily_uuidindex][index1]:
+                send = True
+                embed.add_field(name=names[index1],
+                                value=str(human_format(olddata[daily_uuidindex][index1])) + "→" + str(human_format(newdata[daily_uuidindex][index1]) + "  +" +
+                                    human_format(newdata[daily_uuidindex][index1] - olddata[daily_uuidindex][index1])),
+                                inline=False)
+        if send:
+            pass
+            #await channel.send(embed=embed)
 
->>>>>>> Stashed changes
 bot.run(KEY)
