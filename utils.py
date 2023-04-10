@@ -34,28 +34,34 @@ def hypixelapi(uuid,api_key):
         return parse_json_apidata_hypixel
 
 def skycryptapi_current(username):
-    API_data_skycrypt_current = requests.get('https://sky.shiiyu.moe/api/v2/profile/' + username)
-    apidata_skycrypt_current = API_data_skycrypt_current.text
-    parse_json_apidata_skycrypt_current = json.loads(apidata_skycrypt_current)
-    for profile in parse_json_apidata_skycrypt_current['profiles']:
-        if parse_json_apidata_skycrypt_current['profiles'][profile]['current']:
-            items = parse_json_apidata_skycrypt_current['profiles'][profile]['items']
-            data = parse_json_apidata_skycrypt_current['profiles'][profile]['data']
-        else:
-            pass
+    try:
+        API_data_skycrypt_current = requests.get('https://sky.shiiyu.moe/api/v2/profile/' + username)
+        apidata_skycrypt_current = API_data_skycrypt_current.text
+        parse_json_apidata_skycrypt_current = json.loads(apidata_skycrypt_current)
+        for profile in parse_json_apidata_skycrypt_current['profiles']:
+            if parse_json_apidata_skycrypt_current['profiles'][profile]['current']:
+                items = parse_json_apidata_skycrypt_current['profiles'][profile]['items']
+                data = parse_json_apidata_skycrypt_current['profiles'][profile]['data']
+            else:
+                pass
 
-    return (items,data)
+        return (items,data)
+    except Exception:
+        return False
 
 def skycryptapi_profile(username, profilename):
-    API_data_skycrypt_current = requests.get('https://sky.shiiyu.moe/api/v2/profile/' + username)
-    apidata_skycrypt_current = API_data_skycrypt_current.text
-    parse_json_apidata_skycrypt_current = json.loads(apidata_skycrypt_current)
-    for profile in parse_json_apidata_skycrypt_current['profiles']:
-        if parse_json_apidata_skycrypt_current['profiles'][profile]['cute_name'] == profilename:
-            items = parse_json_apidata_skycrypt_current['profiles'][profile]['items']
-            data = parse_json_apidata_skycrypt_current['profiles'][profile]['data']
+    try:
+        API_data_skycrypt_current = requests.get('https://sky.shiiyu.moe/api/v2/profile/' + username)
+        apidata_skycrypt_current = API_data_skycrypt_current.text
+        parse_json_apidata_skycrypt_current = json.loads(apidata_skycrypt_current)
+        for profile in parse_json_apidata_skycrypt_current['profiles']:
+            if parse_json_apidata_skycrypt_current['profiles'][profile]['cute_name'] == profilename:
+                items = parse_json_apidata_skycrypt_current['profiles'][profile]['items']
+                data = parse_json_apidata_skycrypt_current['profiles'][profile]['data']
 
-    return (items,data)
+        return (items,data)
+    except Exception:
+        return False
 
 def fortniteapi():
     API_data_fortnite = requests.get('https://fortnite-api.com/v2/stats/br/v2/' + fortniteid, headers=fortnitekey)
