@@ -29,6 +29,8 @@ def hypixelapi(uuid,api_key):
         parse_json_apidata_hypixel = json.loads(apidata_hypixel)
         return parse_json_apidata_hypixel
     except Exception:
+        samplejson = open('samplejson.json')
+        parse_json_apidata_hypixel = json.load(samplejson)
         return parse_json_apidata_hypixel
 
 def skycryptapi_current(username):
