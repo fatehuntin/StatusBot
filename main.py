@@ -506,9 +506,10 @@ async def progress():
     newdata = []
 
     for daily_uuidindex, uuid in enumerate(uuid_list):
+        api = skycryptapi_current(uuid_list[daily_uuidindex])
         if not api:
             break
-        api = skycryptapi_current(uuid_list[daily_uuidindex])[1]
+        api = api[1]
         send = False
         embed = discord.Embed(
             title=f"Daily progress update for {username_list[daily_uuidindex]}"
