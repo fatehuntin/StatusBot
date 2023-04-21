@@ -69,7 +69,7 @@ for index, x in enumerate(uuid_list):
     whosonline.append('')
     verified_logins.append(False)
     last_online.append(int(time.time()))
-    newdata.append([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    newdata.append([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 gamers = []
 current_time = int(time.time())
 if debug:
@@ -114,11 +114,13 @@ async def status():
             statuscolour = discord.Color.green()
             statusemoji = onlineemoji
             online_status[index] = 'True'
+            lastorsince = "They have been online since"
             online_time = ""
         if not online_status[index]:
             statusname = "OFFLINE "
             statuscolour = discord.Color.red()
             statusemoji = offlineemoji
+            lastorsince = "They have been offline since"
             online_status[index] = 'False'
             if uptime:
                 online_time = timestamper(current_time - last_online[index])
@@ -128,7 +130,7 @@ async def status():
             embed = discord.Embed(title=f"{username} is now {statusname}", colour=statuscolour,
                                   url=f"https://sky.shiiyu.moe/stats/{uuid_list[index]}")
             embed.set_thumbnail(url="https://visage.surgeplay.com/head/" + str(uuid))
-            embed.add_field(name=statusemoji, value=f"They have been online since <t:{str(current_time)}:R>")
+            embed.add_field(name=statusemoji, value=f"{lastorsince} <t:{str(current_time)}:R>")
             if online_time:
                 embed.add_field(name="They were online for:", value=online_time, inline=False)
             if modused[index]:
@@ -495,54 +497,67 @@ async def embedmaker(ctx, channel: discord.Option(str), title: discord.Option(st
 oldapi = ""
 @tasks.loop(hours=24)
 async def progress():
+    print("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-")
     global newdata, oldapi, olddata
+    updated = []
+    for x in uuid_list:
+        updated.append("False")
     channel = bot.get_channel(mainchannel)
-    embed = discord.Embed(
-        title="Daily progress update"
-    )
     names = ["Taming", "Farming", "Mining", "Combat", "Foraging", "Fishing", "Enchanting", "Alchemy", "Zombie Slayer",
-             "Spider Slayer", "Wolf Slayer", "Enderman Slayer", "Blaze Slayer", "Catacombs"]
+             "Spider Slayer", "Wolf Slayer", "Enderman Slayer", "Blaze Slayer", "Catacombs", "????", "????", "????", "????", "????"]
     olddata = newdata
     newdata = []
-
-    for daily_uuidindex, uuid in enumerate(uuid_list):
-        api = skycryptapi_current(uuid_list[daily_uuidindex])
-        if not api:
-            break
-        api = api[1]
-        send = False
-        embed = discord.Embed(
-            title=f"Daily progress update for {username_list[daily_uuidindex]}"
-        )
-        embed.set_thumbnail(url="https://visage.surgeplay.com/head/" + str(uuid))
-        newdata.append([])
-        newdata[daily_uuidindex].append(int(api['levels']['taming']['xp']))  # 0
-        newdata[daily_uuidindex].append(int(api['levels']['farming']['xp']))  # 1
-        newdata[daily_uuidindex].append(int(api['levels']['mining']['xp']))  # 2
-        newdata[daily_uuidindex].append(int(api['levels']['combat']['xp']))  # 3
-        newdata[daily_uuidindex].append(int(api['levels']['foraging']['xp']))  # 4
-        newdata[daily_uuidindex].append(int(api['levels']['fishing']['xp']))  # 5
-        newdata[daily_uuidindex].append(int(api['levels']['enchanting']['xp']))  # 6
-        newdata[daily_uuidindex].append(int(api['levels']['alchemy']['xp']))  # 7
-        newdata[daily_uuidindex].append(int(api['slayers']['zombie']['xp']))  # 8
-        newdata[daily_uuidindex].append(int(api['slayers']['spider']['xp']))  # 9
-        newdata[daily_uuidindex].append(int(api['slayers']['wolf']['xp']))  # 10
-        if api['slayers']['enderman']['level']['currentLevel'] != 0:
-            newdata[daily_uuidindex].append(int(api['slayers']['enderman']['xp']))  # 11
-        if api['slayers']['blaze']['level']['currentLevel'] != 0:
-            newdata[daily_uuidindex].append(int(api['slayers']['blaze']['xp']))  # 12
-        newdata[daily_uuidindex].append(int(api['dungeons']['catacombs']['level']['xp']))  # 13
+    while "False" in updated:
+        print(updated)
         await asyncio.sleep(10)
-        for index1, y in enumerate(newdata[daily_uuidindex]):
-            if newdata[daily_uuidindex][index1] > olddata[daily_uuidindex][index1]:
-                send = True
-                embed.add_field(name=names[index1],
-                                value=str(human_format(olddata[daily_uuidindex][index1])) + "→" + str(human_format(newdata[daily_uuidindex][index1]) + "  +" +
-                                    human_format(newdata[daily_uuidindex][index1] - olddata[daily_uuidindex][index1])),
-                                inline=False)
-        if send:
-            await channel.send(embed=embed)
-        else:
-            pass
+        for daily_uuidindex, uuid in enumerate(uuid_list):
+            if updated[daily_uuidindex] == "True":
+                pass
+            api = skycryptapi_current(uuid_list[daily_uuidindex])
+            if not api:
+                break
+            api = api[1]
+            logging.debug(api)
+            send = False
+            updated[daily_uuidindex] = "True"
+            embed = discord.Embed(
+                title=f"Daily progress update for {username_list[daily_uuidindex]}",
+                url=f"https://sky.shiiyu.moe/stats{uuid_list[daily_uuidindex]}"
+            )
+            embed.set_thumbnail(url="https://visage.surgeplay.com/head/" + str(uuid))
+            newdata.append([])
+            newdata[daily_uuidindex].append(int(api['levels']['taming']['xp']))  # 0
+            newdata[daily_uuidindex].append(int(api['levels']['farming']['xp']))  # 1
+            newdata[daily_uuidindex].append(int(api['levels']['mining']['xp']))  # 2
+            newdata[daily_uuidindex].append(int(api['levels']['combat']['xp']))  # 3
+            newdata[daily_uuidindex].append(int(api['levels']['foraging']['xp']))  # 4
+            newdata[daily_uuidindex].append(int(api['levels']['fishing']['xp']))  # 5
+            newdata[daily_uuidindex].append(int(api['levels']['enchanting']['xp']))  # 6
+            newdata[daily_uuidindex].append(int(api['levels']['alchemy']['xp']))  # 7
+            newdata[daily_uuidindex].append(int(api['slayers']['zombie']['xp']))  # 8
+            newdata[daily_uuidindex].append(int(api['slayers']['spider']['xp']))  # 9
+            newdata[daily_uuidindex].append(int(api['slayers']['wolf']['xp']))  # 10
+            if api['slayers']['enderman']['level']['currentLevel'] != 0:
+                newdata[daily_uuidindex].append(int(api['slayers']['enderman']['xp']))  # 11
+            if api['slayers']['blaze']['level']['currentLevel'] != 0:
+                newdata[daily_uuidindex].append(int(api['slayers']['blaze']['xp']))  # 12
+            newdata[daily_uuidindex].append(int(api['dungeons']['catacombs']['level']['xp']))  # 13
+            await asyncio.sleep(10)
+            print(username_list[daily_uuidindex])
+            for index1, y in enumerate(newdata[daily_uuidindex]):
+                #print(newdata[daily_uuidindex])
+                #print(olddata[daily_uuidindex])
+                #print(y)
+                print(index1)
+                if newdata[daily_uuidindex][index1] > olddata[daily_uuidindex][index1]:
+                    send = True
+                    embed.add_field(name=names[index1],
+                                    value=str(human_format(olddata[daily_uuidindex][index1])) + "→" + str(human_format(newdata[daily_uuidindex][index1]) + "  +" +
+                                        human_format(newdata[daily_uuidindex][index1] - olddata[daily_uuidindex][index1])),
+                                    inline=False)
+            if send:
+                await channel.send(embed=embed)
+            else:
+                pass
 
 bot.run(KEY)
