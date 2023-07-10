@@ -23,7 +23,7 @@ bot = commands.Bot(
     intents=intents,
 )
 app = FastAPI()
-import nest_asyncio
+#import nest_asyncio
 
 #nest_asyncio.apply()
 
@@ -235,6 +235,10 @@ async def restoremyfaithinhumanity():
 @bot.slash_command(description="Get statuses and general stats of the bot")
 async def info(ctx):
     global skillIssue, mayorstatus, statusStatus
+    if progress.is_running():
+        progressstatus = "ok"
+    if not progress.is_running():
+        progressstatus = "I drink to keep the pain away"
     if status.is_running():
         statusStatus = "Running   :green_square:"
     if not status.is_running():
@@ -261,6 +265,8 @@ async def info(ctx):
     embed.add_field(name="Mayorchannel",
                     value=mayorstatus,
                     inline=False)
+    embed.add_field(name="Progress",
+                    value=progressstatus, inline=False)
 
     embed.add_field(name="Ping",
                     value=f"Latency is {int(bot.latency * 1000)}ms")
