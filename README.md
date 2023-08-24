@@ -1,7 +1,6 @@
 # StatusBot
-Discord bot to facilitate account sharing
+Discord bot to easily look at player's statuses
 
-The bot sends a message every time a tracked account logs in or out of hypixel and has a status that changes depending on how many accounts are online.
 
 
 # Installation
