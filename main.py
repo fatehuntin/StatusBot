@@ -151,8 +151,6 @@ async def status():
                     fp.close()
             elif online_status[index] == 'False':
                 print("HI")
-                await progress()
-
                 gamers.remove(username)
                 timeplayed = current_time - last_online[index]
                 totaltime[index] = totaltime[index] + timeplayed
@@ -173,7 +171,7 @@ async def status():
             await bot.change_presence(activity=discord.Game(name=separator.join(gamers) + " is online"))
         elif len(gamers) == 0:
             await bot.change_presence(activity=discord.Game(name="No one is online"))
-        await asyncio.sleep(5)
+        await asyncio.sleep(2)
 
 
 # TODO put this in info
@@ -226,12 +224,12 @@ async def restoremyfaithinhumanity():
         with open('logs.log', 'r+') as fp:
             await logchannel.send(file=discord.File(fp, 'logs.log'))
             fp.truncate(0)
-    if not progress.is_running():
-        logging.warning("progress stopped")
-        progress.start()
-        with open('logs.log', 'r+') as fp:
-            await logchannel.send(file=discord.File(fp, 'logs.log'))
-            fp.truncate(0)
+    #if not progress.is_running():
+        #logging.warning("progress stopped")
+        #progress.start()
+        #with open('logs.log', 'r+') as fp:
+           #await logchannel.send(file=discord.File(fp, 'logs.log'))
+            #fp.truncate(0)
     await asyncio.sleep(30)
 
 
@@ -250,10 +248,6 @@ async def info(ctx):
         skillIssue = "Running   :green_square:"
     if not restoremyfaithinhumanity.is_running():
         skillIssue = "Not running   :red_square:"
-    if mayorchannel.is_running():
-        mayorstatus = "Running   :green_square:"
-    if not mayorchannel.is_running():
-        mayorstatus = "Not running   :red_square:"
     embed = discord.Embed(title="Info",
                           color=discord.Color.dark_purple()
                           )
