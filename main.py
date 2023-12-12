@@ -8,7 +8,7 @@ import uvicorn
 from discord.ext import tasks, commands
 from fastapi import FastAPI
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, onlineemoji, \
-    offlineemoji, uptime, authlist, modused, apiip
+    offlineemoji, uptime, authlist, apiip
 from totaltime import totaltime
 from utils import timestamper, hypixelapi, mayorapi, mayorgraphing, skycryptapi_current, \
     skycryptapi_profile, findWholeWord, human_format
@@ -113,14 +113,19 @@ async def status():
             statusname = "ONLINE "
             statuscolour = discord.Color.green()
             statusemoji = onlineemoji
+            ballsinyamouth = "They were offline for:"
             online_status[index] = 'True'
             lastorsince = "They have been online since"
-            online_time = ""
+            if uptime:
+                online_time = timestamper(current_time - last_online[index])
+            else:
+                online_time = ""
         if not online_status[index]:
             statusname = "OFFLINE "
             statuscolour = discord.Color.red()
             statusemoji = offlineemoji
             lastorsince = "They have been offline since"
+            ballsinyamouth = "They were online for:"
             online_status[index] = 'False'
             if uptime:
                 online_time = timestamper(current_time - last_online[index])
@@ -132,12 +137,7 @@ async def status():
             embed.set_thumbnail(url="https://visage.surgeplay.com/head/" + str(uuid))
             embed.add_field(name=statusemoji, value=f"{lastorsince} <t:{str(current_time)}:R>")
             if online_time:
-                embed.add_field(name="They were online for:", value=online_time, inline=False)
-            if modused[index]:
-                if verified_logins[index]:
-                    embed.add_field(name=f"{whosonline[index]} is now playing on {username}")
-                if not verified_logins[index]:
-                    await channel.send("@here")
+                embed.add_field(name=ballsinyamouth, value=online_time, inline=False)
             await channel.send(embed=embed)
             online_list[index] = online_status[index]
             if online_status[index] == 'True':
@@ -150,6 +150,9 @@ async def status():
                     fp.write("]")
                     fp.close()
             elif online_status[index] == 'False':
+                print("HI")
+                await progress()
+
                 gamers.remove(username)
                 timeplayed = current_time - last_online[index]
                 totaltime[index] = totaltime[index] + timeplayed
@@ -170,7 +173,7 @@ async def status():
             await bot.change_presence(activity=discord.Game(name=separator.join(gamers) + " is online"))
         elif len(gamers) == 0:
             await bot.change_presence(activity=discord.Game(name="No one is online"))
-        await asyncio.sleep(1)
+        await asyncio.sleep(5)
 
 
 # TODO put this in info
@@ -273,149 +276,10 @@ async def info(ctx):
     await ctx.respond(embed=embed)
 
 
-@bot.slash_command(description="Start the mayor channel")
-async def mayorchannelstart(ctx):
-    if mayorchannel.is_running():
-        await ctx.respond("The mayor channel loop is currently running!")
-    elif not mayorchannel.is_running():
-        await ctx.respond("Done!")
-        await mayorchannel.start()
 
 
 mayorruncount = 0
 
-
-class MyView(discord.ui.View):
-    @discord.ui.button(label="View perks", style=discord.ButtonStyle.primary, emoji="❓")
-    async def button_callback(self, button, interaction):
-        embed = discord.Embed(title="Perks of all the mayors in the current election",
-                              color=discord.Color.dark_gold())
-        currentelectionperks = "HI"
-        mayors = ["1", "2", "3", "4", "5"]
-        canindex = int(0)
-        parse_mayorapi = mayorapi()
-        for x in mayors:
-            embed.add_field(name=f"**{parse_mayorapi['current']['candidates'][canindex]['name']}**", value="",
-                            inline=False)
-            for index, aa in enumerate(parse_mayorapi['current']['candidates'][canindex]['perks']):
-                perks = parse_mayorapi['current']['candidates'][canindex]['perks'][index]['description']
-                perks = perks.replace("§a", "")
-                perks = perks.replace("§7", "")
-                perks = perks.replace("§9", "")
-                perks = perks.replace("§e", "")
-                perks = perks.replace("§5", "")
-                perks = perks.replace("§2", "")
-                perks = perks.replace("§4", "")
-                perks = perks.replace("§c", "")
-                perks = perks.replace("§6", "")
-                perks = perks.replace("§b", "")
-                perks = perks.replace("§3", "")
-                perks = perks.replace("§1", "")
-                perks = perks.replace("§f", "")
-                perks = perks.replace("§d", "")
-                perks = perks.replace("§8", "")
-                perks = perks.replace("§0", "")
-                perks = "• " + parse_mayorapi['current']['candidates'][canindex]['perks'][index]['name'] + "\n" + perks
-                embed.add_field(name="",
-                                value=perks,
-                                inline=True)
-            canindex = canindex + 1
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-
-
-@tasks.loop(minutes=1)
-async def mayorchannel():
-    parse_mayorapi = mayorapi()
-    global mayorchannelid, currentmayorthumbnail
-    global mayorruncount
-    mayorchannelid1 = bot.get_channel(mayorchannelid)
-    lastupdated = parse_mayorapi['lastUpdated']
-    if mayorruncount == 0:
-        embed = discord.Embed(
-            title="The current mayor is: " + parse_mayorapi['mayor']['name'] + "(" + parse_mayorapi['mayor'][
-                'key'] + ")",
-            color=discord.Color.dark_gold())
-        currentmayor_perks = parse_mayorapi['mayor']['perks']
-        embed.add_field(name="Perks",
-                        value="",
-                        inline=False)
-        mayorruncount = + 1
-        await mayorchannelid1.send(embed=embed)
-        global lastmessage
-        lastmessage = bot.get_message(mayorchannelid1.last_message_id)
-    if mayorruncount > 0:
-        embed = discord.Embed(
-            title="The current mayor is: " + parse_mayorapi['mayor']['name'] + "(" + parse_mayorapi['mayor'][
-                'key'] + ")",
-            color=discord.Color.dark_gold())
-        if parse_mayorapi['mayor']['name'] == "Aatrox":
-            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/a/a5/Aatrox.png/revision/latest?cb=20200915234840"
-        if parse_mayorapi['mayor']['name'] == "Cole":
-            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/b/b8/Cole.png/revision/latest?cb=20200921062534"
-        if parse_mayorapi['mayor']['name'] == "Diana":
-            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/5/5f/Diana.png/revision/latest?cb=20200912120658"
-        if parse_mayorapi['mayor']['name'] == "Diaz":
-            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/d/da/Diaz.png/revision/latest?cb=20200921063025"
-        if parse_mayorapi['mayor']['name'] == "Finnegan":
-            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/8/85/Finnegan.png/revision/latest?cb=20221118161611"
-        if parse_mayorapi['mayor']['name'] == "Foxy":
-            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/9/90/Foxy.png/revision/latest?cb=20200919054800"
-        if parse_mayorapi['mayor']['name'] == "Marina":
-            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/9/9d/Marina.png/revision/latest?cb=20200915234253"
-        if parse_mayorapi['mayor']['name'] == "Paul":
-            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/0/00/Paul.png/revision/latest?cb=20200921063037"
-        if parse_mayorapi['mayor']['name'] == "Jerry":
-            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/5/58/Villager.png/revision/latest?cb=20210805125409"
-        if parse_mayorapi['mayor']['name'] == "Derpy":
-            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/d/de/Derpy.png/revision/latest?cb=20210802153205"
-        if parse_mayorapi['mayor']['name'] == "Scorpius":
-            currentmayorthumbnail = "https://static.wikia.nocookie.net/hypixel-skyblock/images/a/af/Scorpius.png/revision/latest?cb=20201017023156"
-        embed.set_thumbnail(url=currentmayorthumbnail)
-        currentmayor_perks = parse_mayorapi['mayor']['perks']
-        embed.add_field(name="Perks",
-                        value="",
-                        inline=False)
-        for index, aa in enumerate(currentmayor_perks):
-            perks = parse_mayorapi['mayor']['perks'][index]['description']
-            perks = perks.replace("§a", "")
-            perks = perks.replace("§7", "")
-            perks = perks.replace("§9", "")
-            perks = perks.replace("§e", "")
-            perks = perks.replace("§5", "")
-            perks = perks.replace("§2", "")
-            perks = perks.replace("§4", "")
-            perks = perks.replace("§c", "")
-            perks = perks.replace("§6", "")
-            perks = perks.replace("§b", "")
-            perks = perks.replace("§3", "")
-            perks = perks.replace("§1", "")
-            perks = perks.replace("§f", "")
-            perks = perks.replace("§d", "")
-            perks = perks.replace("§8", "")
-            perks = perks.replace("§0", "")
-            embed.add_field(name=parse_mayorapi['mayor']['perks'][index]['name'],
-                            value=perks,
-                            inline=True)
-        global nextbooth
-        global nextelection
-        if nextelection < int(time.time()):
-            nextelection = nextelection + 446400
-        if nextbooth < int(time.time()):
-            nextbooth = nextbooth + 446400
-        lastupdated = str(lastupdated)[:-3]
-        embed.add_field(name="Next election",
-                        value="<t:" + str(nextelection) + ":R>",
-                        inline=False)
-        embed.add_field(name="next booth open",
-                        value="<t:" + str(nextbooth) + ":R>",
-                        inline=False)
-        embed.add_field(name="Last Updated",
-                        value="<t:" + str(lastupdated) + ":R>",
-                        inline=False)
-        graphurl = mayorgraphing()
-        embed.set_image(url=graphurl)
-        mayorruncount = + 1
-        await lastmessage.edit(embed=embed, view=MyView())
 
 
 async def get_profile_names(ctx: discord.AutocompleteContext):
@@ -550,20 +414,26 @@ async def progress():
             newdata[daily_uuidindex].append(int(api['dungeons']['catacombs']['level']['xp']))  # 13
             await asyncio.sleep(10)
             print(username_list[daily_uuidindex])
-            for index1, y in enumerate(newdata[daily_uuidindex]):
-                #print(newdata[daily_uuidindex])
-                #print(olddata[daily_uuidindex])
-                #print(y)
-                print(index1)
-                if newdata[daily_uuidindex][index1] > olddata[daily_uuidindex][index1]:
-                    send = True
-                    embed.add_field(name=names[index1],
-                                    value=str(human_format(olddata[daily_uuidindex][index1])) + "→" + str(human_format(newdata[daily_uuidindex][index1]) + "  +" +
-                                        human_format(newdata[daily_uuidindex][index1] - olddata[daily_uuidindex][index1])),
-                                    inline=False)
-            if send:
-                await channel.send(embed=embed)
-            else:
+            try:
+                for index1, y in enumerate(newdata[daily_uuidindex]):
+                    # print(newdata[daily_uuidindex])
+                    # print(olddata[daily_uuidindex])
+                    # print(y)
+                    #print(index1)
+                    if newdata[daily_uuidindex][index1] > olddata[daily_uuidindex][index1]:
+                        send = True
+                        embed.add_field(name=names[index1],
+                                        value=str(human_format(olddata[daily_uuidindex][index1])) + "→" + str(
+                                            human_format(newdata[daily_uuidindex][index1]) + "  +" +
+                                            human_format(
+                                                newdata[daily_uuidindex][index1] - olddata[daily_uuidindex][index1])),
+                                        inline=False)
+                if send:
+                    await channel.send(embed=embed)
+                else:
+                    pass
+            except Exception:
                 pass
+
 
 bot.run(KEY)
