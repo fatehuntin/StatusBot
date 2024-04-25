@@ -4,9 +4,7 @@ import logging
 import time
 import discord
 import requests
-import uvicorn
 from discord.ext import tasks, commands
-from fastapi import FastAPI
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, onlineemoji, \
     offlineemoji, uptime, authlist, apiip
 from totaltime import totaltime
@@ -22,24 +20,6 @@ bot = commands.Bot(
     description=description,
     intents=intents,
 )
-app = FastAPI()
-#import nest_asyncio
-
-#nest_asyncio.apply()
-
-#if __name__ == "__main__":
-    #uvicorn.run("main:app", host=apiip, port=8000, log_level="debug", loop="asyncio")
-
-
-@app.post("/")
-def add_item(request: dict):
-    if request["auth"] in authlist:
-        auth_uuidindex = uuid_list.index(request["uuid"])
-        whosonline[auth_uuidindex] = request["player"]
-        verified_logins[auth_uuidindex] = True
-        return {"status": "ok", "message": "Successfully authenticated!"}
-    else:
-        return {"status": "ok", "message": "Authentication failed!"}
 
 
 @bot.event
@@ -259,11 +239,6 @@ async def info(ctx):
     embed.add_field(name="Task keeper",
                     value=skillIssue,
                     inline=False)
-    embed.add_field(name="Mayorchannel",
-                    value=mayorstatus,
-                    inline=False)
-    embed.add_field(name="Progress",
-                    value=progressstatus, inline=False)
 
     embed.add_field(name="Ping",
                     value=f"Latency is {int(bot.latency * 1000)}ms")
