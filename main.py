@@ -73,7 +73,6 @@ if not debug:
 async def status():
     global statusname, statuscolour, statusemoji, online_time, online_time, level
     for index, uuid in enumerate(uuid_list):
-        expgained = levelsapi(uuid) - level[index]
         parse_json_apidata_hypixel = hypixelapi(uuid, api_key)
         channel = bot.get_channel(mainchannel)
         logchannel = bot.get_channel(loggingchannel)
@@ -115,6 +114,7 @@ async def status():
             else:
                 online_time = ""
         if online_status[index] != online_list[index]:
+            expgained = levelsapi(uuid) - level[index]
             level[index] = levelsapi(uuid)
             embed = discord.Embed(title=f"{username} is now {statusname}", colour=statuscolour,
                                   url=f"https://sky.shiiyu.moe/stats/{uuid_list[index]}")
