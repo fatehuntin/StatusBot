@@ -32,6 +32,23 @@ def hypixelapi(uuid,api_key):
         samplejson = open('samplejson.json')
         parse_json_apidata_hypixel = json.load(samplejson)
         return parse_json_apidata_hypixel
+    
+def levelsapi(uuid):
+    try:
+        API_data_hypixel = requests.get('https://sky.shiiyu.moe/api/v2/profile/' + uuid)
+        apidata_hypixel = API_data_hypixel.text
+        parse_json_apidata_hypixel = json.loads(apidata_hypixel)
+        for profile in parse_json_apidata_hypixel['profiles']:
+            if parse_json_apidata_hypixel['profiles'][profile]['current']:
+                level = parse_json_apidata_hypixel['profiles'][profile]['data']['skyblock_level']['xp']
+                return level
+            else:
+                pass
+    except Exception:
+        samplejson = open('samplejson.json')
+        parse_json_apidata_hypixel = json.load(samplejson)
+        return parse_json_apidata_hypixel
+
 
 def skycryptapi_current(username):
     try:
