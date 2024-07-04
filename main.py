@@ -40,7 +40,7 @@ online_status = []
 newdata = []
 olddata = []
 last_online = [0, 0, 0, 0]
-level = [0, 0, 0, 0]
+sblevel = [0, 0, 0, 0]
 channel = bot.get_channel(mainchannel)
 logchannel = bot.get_channel(loggingchannel)
 nextelection = 1677338100
@@ -71,7 +71,7 @@ if not debug:
 # TODO add button under offline msg to view the progress made while the account was online
 @tasks.loop(seconds=10)
 async def status():
-    global statusname, statuscolour, statusemoji, online_time, online_time, level
+    global statusname, statuscolour, statusemoji, online_time, online_time, sblevel
     for index, uuid in enumerate(uuid_list):
         parse_json_apidata_hypixel = hypixelapi(uuid, api_key)
         channel = bot.get_channel(mainchannel)
@@ -92,6 +92,7 @@ async def status():
             logging.debug(online_status[index], online_list[index], username, last_online[index],
                           timestamper(current_time - last_online[index]))
         if online_status[index]:
+            sblevel[index] = levelsapi(uuid)
             statusname = "ONLINE "
             statuscolour = discord.Color.green()
             statusemoji = onlineemoji
@@ -103,6 +104,7 @@ async def status():
             else:
                 online_time = ""
         if not online_status[index]:
+            expgained = levelsapi(uuid) - sblevel[index]
             statusname = "OFFLINE "
             statuscolour = discord.Color.red()
             statusemoji = offlineemoji
@@ -114,15 +116,13 @@ async def status():
             else:
                 online_time = ""
         if online_status[index] != online_list[index]:
-            expgained = levelsapi(uuid) - level[index]
-            level[index] = levelsapi(uuid)
             embed = discord.Embed(title=f"{username} is now {statusname}", colour=statuscolour,
                                   url=f"https://sky.shiiyu.moe/stats/{uuid_list[index]}")
             embed.set_thumbnail(url="https://visage.surgeplay.com/head/" + str(uuid))
             embed.add_field(name=statusemoji, value=f"{lastorsince} <t:{str(current_time)}:R>")
             if online_time:
                 embed.add_field(name=ballsinyamouth, value=online_time, inline=False)
-            if expgained > 0: embed.add_field(name="",value=f"Skyblock exp gained: {expgained}")
+            if expgained != 0: embed.add_field(name="",value=f"Skyblock exp gained: {expgained}")
             await channel.send(embed=embed)
             online_list[index] = online_status[index]
             if online_status[index] == 'True':
