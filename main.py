@@ -42,6 +42,7 @@ olddata = []
 last_online = [0, 0, 0, 0]
 sblevel = [0, 0, 0, 0]
 newlvl = [0, 0, 0, 0]
+statusstarted = False
 channel = bot.get_channel(mainchannel)
 logchannel = bot.get_channel(loggingchannel)
 nextelection = 1677338100
@@ -72,6 +73,9 @@ if not debug:
 # TODO add button under offline msg to view the progress made while the account was online
 @tasks.loop(seconds=10)
 async def status():
+    if not statusstarted: 
+        print("Loading Status...") 
+        statusstarted = True
     global statusname, statuscolour, statusemoji, online_time, online_time, sblevel
     for index, uuid in enumerate(uuid_list):
         parse_json_apidata_hypixel = hypixelapi(uuid, api_key)
