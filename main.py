@@ -41,7 +41,7 @@ newdata = []
 olddata = []
 last_online = [0, 0, 0, 0]
 sblevel = [0, 0, 0, 0]
-newlvl = [0, 0, 0, 0]
+newlvl = [1000, 2000, 3000, 4000]
 expgained = [0, 0, 0, 0]
 statusstarted = False
 channel = bot.get_channel(mainchannel)
@@ -72,7 +72,7 @@ if not debug:
 
 
 # TODO add button under offline msg to view the progress made while the account was online
-@tasks.loop(seconds=10)
+@tasks.loop(seconds=5)
 async def status():
     global statusname, statuscolour, statusemoji, online_time, online_time, sblevel, statusstarted
     if not statusstarted: 
