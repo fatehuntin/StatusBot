@@ -107,7 +107,7 @@ async def status():
                 online_time = ""
         if not online_status[index]:
             expgained[index] = newlvl[index] - sblevel[index]
-            newlvl[index] = sblevel[index]
+            sblevel[index] = newlvl[index]
             statusname = "OFFLINE "
             statuscolour = discord.Color.red()
             statusemoji = offlineemoji
