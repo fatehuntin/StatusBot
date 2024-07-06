@@ -41,6 +41,7 @@ newdata = []
 olddata = []
 last_online = [0, 0, 0, 0]
 sblevel = [0, 0, 0, 0]
+newlvl = [0, 0, 0, 0]
 channel = bot.get_channel(mainchannel)
 logchannel = bot.get_channel(loggingchannel)
 nextelection = 1677338100
@@ -77,6 +78,7 @@ async def status():
         channel = bot.get_channel(mainchannel)
         logchannel = bot.get_channel(loggingchannel)
         current_time = int(time.time())
+        newlvl[index] = levelsapi(uuid)
         if not parse_json_apidata_hypixel['success']:
             break
         try:
