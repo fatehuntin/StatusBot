@@ -125,6 +125,7 @@ async def status():
             if online_time:
                 embed.add_field(name=ballsinyamouth, value=online_time, inline=False)
             if expgained > 0: embed.add_field(name="",value=f"Skyblock exp gained: {expgained}")
+            print(f"expgained: {expgained}, index: {index}, newlvl{newlvl[index]}, sblvl: {sblvl[index]}, username: {username}{username_list[index]}")
             await channel.send(embed=embed)
             online_list[index] = online_status[index]
             if online_status[index] == 'True':
