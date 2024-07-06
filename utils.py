@@ -33,14 +33,24 @@ def hypixelapi(uuid,api_key):
         parse_json_apidata_hypixel = json.load(samplejson)
         return parse_json_apidata_hypixel
     
+
+def usernameapi(uuid):
+    try:
+        API_data_hypixel = requests.get('https://sessionserver.mojang.com/session/minecraft/profile/' + uuid)
+        apidata_hypixel = API_data_hypixel.text
+        parse_json_apidata_hypixel = json.loads(apidata_hypixel)
+        return parse_json_apidata_hypixel['name']
+    except Exception:
+        print("MOJANG API BOOM")
+
 def levelsapi(uuid):
     try:
-        API_data_hypixel = requests.get('https://sky.shiiyu.moe/api/v2/profile/' + uuid)
+        API_data_hypixel = requests.get(f"https://api.hypixel.net/skyblock/profiles?key={api_key}&uuid={uuid}")
         apidata_hypixel = API_data_hypixel.text
         parse_json_apidata_hypixel = json.loads(apidata_hypixel)
         for profile in parse_json_apidata_hypixel['profiles']:
-            if parse_json_apidata_hypixel['profiles'][profile]['current']:
-                level = parse_json_apidata_hypixel['profiles'][profile]['data']['skyblock_level']['xp']
+            if profile['selected']:
+                level = profile['members'][uuid]['leveling']['experience']
                 return level
             else:
                 pass

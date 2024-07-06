@@ -10,7 +10,7 @@ from discord.ext import tasks, commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, onlineemoji, \
     offlineemoji, uptime, twotimesuser
 from totaltime import totaltime
-from utils import timestamper, hypixelapi, levelsapi
+from utils import timestamper, hypixelapi, levelsapi, usernameapi
 
 description = """
 Status Bot
@@ -23,14 +23,7 @@ bot = commands.Bot(
 )
 
 
-@bot.event
-async def on_ready():
-    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
-    print('-------------------------------------------------')
-    logchannel = bot.get_channel(loggingchannel)
-    await logchannel.send("STARTED")
-    await bot.sync_commands()
-    await restoremyfaithinhumanity.start()
+
 
 pinged = False
 whosonline = []
@@ -41,13 +34,14 @@ newdata = []
 olddata = []
 last_online = [0, 0, 0, 0]
 sblevel = [0, 0, 0, 0]
-newlvl = [1000, 2000, 3000, 4000]
+newlvl = [0, 0, 0, 0]
 expgained = [0, 0, 0, 0]
 statusstarted = False
 channel = bot.get_channel(mainchannel)
 logchannel = bot.get_channel(loggingchannel)
 nextelection = 1677338100
 nextbooth = 1677449700
+usernames = ["", "", "", ""]
 for index, x in enumerate(uuid_list):
     online_list.append('False')
     online_status.append('False')
@@ -69,7 +63,17 @@ if not debug:
         format='%(asctime)s %(levelname)-8s %(message)s',
         level=logging.WARNING,
         datefmt='%Y-%m-%d %H:%M:%S')
-
+    
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
+    print('-------------------------------------------------')
+    """for index, uuid in enumerate(uuid_list):
+        usernames[index] = usernameapi(uuid)
+        print(f"{index} {uuid} {usernames[index]}")
+        await asyncio.sleep(5)"""
+    await bot.sync_commands()
+    await restoremyfaithinhumanity.start()
 
 # TODO add button under offline msg to view the progress made while the account was online
 @tasks.loop(seconds=5)
@@ -83,7 +87,6 @@ async def status():
         channel = bot.get_channel(mainchannel)
         logchannel = bot.get_channel(loggingchannel)
         current_time = int(time.time())
-        newlvl[index] = levelsapi(uuid)
         if not parse_json_apidata_hypixel['success']:
             break
         try:
@@ -95,6 +98,7 @@ async def status():
             pass
         username = username_list[index]
         if online_status[index]:
+            newlvl[index] = levelsapi(uuid)
             statusname = "ONLINE "
             statuscolour = discord.Color.green()
             statusemoji = onlineemoji
@@ -125,8 +129,10 @@ async def status():
             embed.add_field(name=statusemoji, value=f"{lastorsince} <t:{str(current_time)}:R>")
             if online_time:
                 embed.add_field(name=ballsinyamouth, value=online_time, inline=False)
-            if expgained[index] > 0: embed.add_field(name="",value=f"Skyblock exp gained: {expgained[index]}")
-            print(f"expgained: {expgained}, index: {index}, newlvl{newlvl}, sblvl: {sblevel}, username: {username}{username_list[index]}")
+            if expgained[index] > 0: 
+                embed.add_field(name="",value=f"Skyblock exp gained: {expgained[index]}")
+                expgained[index] = 0
+            #print(f"expgained: {expgained}, index: {index}, newlvl{newlvl}, sblvl: {sblevel}, username: {username}{username_list[index]}")
             await channel.send(embed=embed)
             online_list[index] = online_status[index]
             if online_status[index] == 'True':
