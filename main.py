@@ -73,10 +73,10 @@ if not debug:
 # TODO add button under offline msg to view the progress made while the account was online
 @tasks.loop(seconds=10)
 async def status():
+    global statusname, statuscolour, statusemoji, online_time, online_time, sblevel, statusstarted
     if not statusstarted: 
         print("Loading Status...") 
         statusstarted = True
-    global statusname, statuscolour, statusemoji, online_time, online_time, sblevel, statusstarted
     for index, uuid in enumerate(uuid_list):
         parse_json_apidata_hypixel = hypixelapi(uuid, api_key)
         channel = bot.get_channel(mainchannel)
