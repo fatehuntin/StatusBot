@@ -42,6 +42,7 @@ olddata = []
 last_online = [0, 0, 0, 0]
 sblevel = [0, 0, 0, 0]
 newlvl = [0, 0, 0, 0]
+expgained = [0, 0, 0, 0]
 statusstarted = False
 channel = bot.get_channel(mainchannel)
 logchannel = bot.get_channel(loggingchannel)
@@ -94,7 +95,6 @@ async def status():
             pass
         username = username_list[index]
         if online_status[index]:
-            sblevel[index] = levelsapi(uuid)
             statusname = "ONLINE "
             statuscolour = discord.Color.green()
             statusemoji = onlineemoji
@@ -106,7 +106,8 @@ async def status():
             else:
                 online_time = ""
         if not online_status[index]:
-            expgained = newlvl[index] - sblevel[index]
+            expgained[index] = newlvl[index] - sblevel[index]
+            newlvl[index] = sblevel[index]
             statusname = "OFFLINE "
             statuscolour = discord.Color.red()
             statusemoji = offlineemoji
