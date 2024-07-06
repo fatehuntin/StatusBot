@@ -76,7 +76,7 @@ async def on_ready():
     await restoremyfaithinhumanity.start()
 
 # TODO add button under offline msg to view the progress made while the account was online
-@tasks.loop(seconds=5)
+@tasks.loop(seconds=10)
 async def status():
     global statusname, statuscolour, statusemoji, online_time, online_time, sblevel, statusstarted
     if not statusstarted: 
