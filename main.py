@@ -125,7 +125,7 @@ async def status():
             embed.add_field(name=statusemoji, value=f"{lastorsince} <t:{str(current_time)}:R>")
             if online_time:
                 embed.add_field(name=ballsinyamouth, value=online_time, inline=False)
-            if expgained > 0: embed.add_field(name="",value=f"Skyblock exp gained: {expgained}")
+            if expgained[index] > 0: embed.add_field(name="",value=f"Skyblock exp gained: {expgained[index]}")
             print(f"expgained: {expgained}, index: {index}, newlvl{newlvl[index]}, sblvl: {sblevel[index]}, username: {username}{username_list[index]}")
             await channel.send(embed=embed)
             online_list[index] = online_status[index]
