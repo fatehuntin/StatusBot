@@ -87,10 +87,6 @@ async def status():
                 index] = "Questionable variable assignment to make api drop a straight nuclear shit in my bed causing the whole program to erupt"
             pass
         username = username_list[index]
-        if debug:
-            print(online_status[index], username, online_list[index], online_list, last_online)
-            logging.debug(online_status[index], online_list[index], username, last_online[index],
-                          timestamper(current_time - last_online[index]))
         if online_status[index]:
             sblevel[index] = levelsapi(uuid)
             statusname = "ONLINE "
@@ -104,7 +100,7 @@ async def status():
             else:
                 online_time = ""
         if not online_status[index]:
-            expgained = levelsapi(uuid) - sblevel[index]
+            expgained = newlvl - sblevel[index]
             statusname = "OFFLINE "
             statuscolour = discord.Color.red()
             statusemoji = offlineemoji
@@ -122,7 +118,7 @@ async def status():
             embed.add_field(name=statusemoji, value=f"{lastorsince} <t:{str(current_time)}:R>")
             if online_time:
                 embed.add_field(name=ballsinyamouth, value=online_time, inline=False)
-            if expgained != 0: embed.add_field(name="",value=f"Skyblock exp gained: {expgained}")
+            if expgained > 0: embed.add_field(name="",value=f"Skyblock exp gained: {expgained}")
             await channel.send(embed=embed)
             online_list[index] = online_status[index]
             if online_status[index] == 'True':
