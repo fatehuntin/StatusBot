@@ -210,7 +210,7 @@ async def restoremyfaithinhumanity():
 async def twotimespowder():
     global pinged
     channel = bot.get_channel(mainchannel)
-    url = "https://soopy.dev/api/soopyv2/botcommand?m=chevents%20mines"
+    url = "https://soopy.dev/api/soopyv2/botcommand?m=chevents"
     html = urlopen(url).read()
     soup = BeautifulSoup(html, features="html.parser")
     text = soup.get_text()
