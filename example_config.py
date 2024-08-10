@@ -9,6 +9,9 @@ uuid_list = []
 #or else it will display incorrect usernames 
 #Example: username_list ['Notch', 'Steve']
 username_list = []
+#Whether or not to send the online/offline message
+#This is useful for if you just want to track how many hours someone plays every day
+send = [True,True,True,True]
 #Modifier
 #A prefix to the username to improve readability (works with emojis)
 #Example = [':smile:',':sob:']

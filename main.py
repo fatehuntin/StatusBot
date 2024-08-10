@@ -8,8 +8,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from discord.ext import tasks, commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, onlineemoji, \
-    offlineemoji, uptime, twotimesuser
-from totaltime import totaltime
+    offlineemoji, uptime, twotimesuser, send
 from utils import timestamper, hypixelapi, levelsapi, usernameapi
 
 description = """
@@ -20,6 +19,7 @@ intents = discord.Intents.default()
 bot = commands.Bot(
     description=description,
     intents=intents,
+    command_prefix='!',
 )
 
 
@@ -32,10 +32,12 @@ online_list = []
 online_status = []
 newdata = []
 olddata = []
-last_online = [0, 0, 0, 0]
-sblevel = [0, 0, 0, 0]
-newlvl = [0, 0, 0, 0]
-expgained = [0, 0, 0, 0]
+last_online = [0, 0, 0, 0, 0, 0]
+sblevel = [0, 0, 0, 0, 0, 0]
+newlvl = [0, 0, 0, 0, 0, 0]
+expgained = [0, 0, 0, 0, 0, 0]
+twentyfourhourtime = [0, 0, 0, 0, 0, 0]
+totaltime = [0, 0, 0, 0, 0, 0]
 statusstarted = False
 channel = bot.get_channel(mainchannel)
 logchannel = bot.get_channel(loggingchannel)
@@ -78,7 +80,7 @@ async def on_ready():
 # TODO add button under offline msg to view the progress made while the account was online
 @tasks.loop(seconds=10)
 async def status():
-    global statusname, statuscolour, statusemoji, online_time, online_time, sblevel, statusstarted
+    global statusname, statuscolour, statusemoji, online_time, sblevel, statusstarted, timeplayed
     if not statusstarted: 
         print("Loading Status...") 
         statusstarted = True
@@ -105,9 +107,12 @@ async def status():
             ballsinyamouth = "They were offline for:"
             online_status[index] = 'True'
             lastorsince = "They have been online since"
+
             if uptime:
+                timeplayed = current_time - last_online[index]
                 online_time = timestamper(current_time - last_online[index])
             else:
+                timeplayed = current_time - last_online[index]
                 online_time = ""
         if not online_status[index]:
             expgained[index] = newlvl[index] - sblevel[index]
@@ -119,8 +124,10 @@ async def status():
             ballsinyamouth = "They were online for:"
             online_status[index] = 'False'
             if uptime:
+                timeplayed = current_time - last_online[index]
                 online_time = timestamper(current_time - last_online[index])
             else:
+                timeplayed = current_time - last_online[index]
                 online_time = ""
         if online_status[index] != online_list[index]:
             embed = discord.Embed(title=f"{username} is now {statusname}", colour=statuscolour,
@@ -133,27 +140,16 @@ async def status():
                 embed.add_field(name="",value=f"Skyblock exp gained: {expgained[index]}")
                 expgained[index] = 0
             #print(f"expgained: {expgained}, index: {index}, newlvl{newlvl}, sblvl: {sblevel}, username: {username}{username_list[index]}")
-            await channel.send(embed=embed)
+            if send[index]: await channel.send(embed=embed)
+            else: pass 
             online_list[index] = online_status[index]
             if online_status[index] == 'True':
                 gamers.append(username)
                 last_online[index] = current_time
-                with open('totaltime.py', 'w+') as fp:
-                    fp.write("totaltime = [")
-                    for x in totaltime:
-                        fp.write("%s," % x)
-                    fp.write("]")
-                    fp.close()
             elif online_status[index] == 'False':
                 gamers.remove(username)
                 timeplayed = current_time - last_online[index]
                 totaltime[index] = totaltime[index] + timeplayed
-                with open('totaltime.py', 'w+') as fp:
-                    fp.write("totaltime = [")
-                    for x in totaltime:
-                        fp.write("%s," % x)
-                    fp.write("]")
-                    fp.close()
                 last_online[index] = current_time
         else:
             pass
@@ -167,6 +163,41 @@ async def status():
             await bot.change_presence(activity=discord.Game(name="No one is online"))
         await asyncio.sleep(2)
 
+@tasks.loop(hours=1)
+async def playtime():
+    global twentyfourhourtime
+    channel = bot.get_channel(mainchannel)
+    embed = discord.Embed(title="24h")
+    for index, uuid in enumerate(uuid_list):
+        if online_status[index]== 'True':
+            twentyfourhourtime[index] = timeplayed + totaltime[index] 
+            #last_online[index] = current_time
+        elif not online_status[index]:
+            twentyfourhourtime[index] = totaltime[index]
+        embed.add_field(name="", value=f"{username_list[index]} was online for {timestamper(twentyfourhourtime[index])} ({round((twentyfourhourtime[index]/86400)*100)}%)", inline=False)
+    await channel.send(embed=embed)
+    twentyfourhourtime = [0, 0, 0, 0, 0, 0]
+        
+async def soopycommands(ctx: discord.AutocompleteContext):
+    command_list = ["rtca", "sblvl", "currdungeon"]
+    return command_list
+
+@bot.slash_command(description='soopy commands')
+async def soopy(ctx, command: discord.Option(str, autocomplete=discord.utils.basic_autocomplete(soopycommands)), player: discord.Option(str, required=False) ):
+    soopyapi = requests.get(f'https://soopy.dev/api/soopyv2/botcommand?m={command}&u={player}')
+    apidata_soopy = soopyapi.text
+    soopyresult = json.loads(apidata_soopy)
+    print(soopyresult)
+    await ctx.send(soopyresult)
+
+
+@bot.slash_command(description='Fix the bot')
+async def fix(ctx):
+    await ctx.respond("Kill yourself.")
+
+@bot.command()
+async def test(ctx, arg):
+    await ctx.send(arg)
 
 @bot.slash_command(description='Total playtime for every account')
 async def stats(ctx):
@@ -199,8 +230,8 @@ async def stats(ctx):
 @tasks.loop(seconds=30)
 async def restoremyfaithinhumanity():
     if not status.is_running():
-        logging.warning("STATUS STOPPED FOR SOME REASON")
         status.start()
+        playtime.start()
         with open('logs.log', 'r+') as fp:
             fp.truncate(0)
     await asyncio.sleep(30)
