@@ -231,7 +231,7 @@ async def stats(ctx):
 async def restoremyfaithinhumanity():
     if not status.is_running():
         status.start()
-        playtime.start()
+        #playtime.start()
         with open('logs.log', 'r+') as fp:
             fp.truncate(0)
     await asyncio.sleep(30)
