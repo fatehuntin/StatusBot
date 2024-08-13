@@ -281,7 +281,7 @@ async def twotimes(ctx):
         await ctx.respond("Locked in powder grinder activated")
 
 @bot.slash_command(description="Dark auction foobel pinger")
-async def twotimes(ctx):
+async def daping(ctx):
     global daping
     if darkauction.is_running():
         darkauction.cancel()
