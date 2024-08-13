@@ -256,6 +256,7 @@ async def twotimespowder():
 @tasks.loop(minutes=1)
 async def darkauction():
     global daping
+    channel = bot.get_channel(mainchannel)
     obj = time.localtime()
     time_str = str(time.asctime(obj))
     if time_str[:-8].endswith("53"):
