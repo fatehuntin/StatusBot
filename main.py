@@ -262,7 +262,7 @@ async def darkauction():
     if time_str[:-8].endswith("53"):
         if not daping: 
             await channel.send("<@623618542658650113> 2 minutes to dark acution")
-            asyncio.sleep(60)
+            await asyncio.sleep(60)
             await channel.send("<@623618542658650113> FOOOBEL IT IS DARK AUCTION GO GET THE FUCKING THING PLEASE")
         daping = True
     else:
