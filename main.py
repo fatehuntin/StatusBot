@@ -286,11 +286,11 @@ async def daping(ctx):
     if darkauction.is_running():
         darkauction.cancel()
         daping = False
-        await ctx.send("2x powder counter is now stopped please stop downtiming")
+        await ctx.send("go farm famer boy")
     elif not darkauction.is_running():
         darkauction.start()
         daping = False
-        await ctx.send("Locked in powder grinder activated")
+        await ctx.send("dark auction ping turned on")
 
 @bot.slash_command(description="Get statuses and general stats of the bot")
 async def info(ctx):
