@@ -26,6 +26,7 @@ bot = commands.Bot(
 
 
 pinged = False
+daping = False
 whosonline = []
 verified_logins = []
 online_list = []
@@ -251,6 +252,22 @@ async def twotimespowder():
     else:
         pinged = False
 
+
+@tasks.loop(minutes=1)
+async def darkauction():
+    global daping
+    obj = time.localtime()
+    time_str = str(time.asctime(obj))
+    if time_str[:-8].endswith("53"):
+        if not daping: 
+            await channel.send("<@623618542658650113> 2 minutes to dark acution")
+            asyncio.sleep(60)
+            await channel.send("<@623618542658650113> FOOOBEL IT IS DARK AUCTION GO GET THE FUCKING THING PLEASE")
+        daping = True
+    else:
+        daping = False
+
+
 @bot.slash_command(description="2X POWDER NOTIFIER TOGGLE MEOWWW")
 async def twotimes(ctx):
     global pinged
@@ -262,6 +279,18 @@ async def twotimes(ctx):
         twotimespowder.start()
         pinged = False
         await ctx.respond("Locked in powder grinder activated")
+
+@bot.slash_command(description="Dark auction foobel pinger")
+async def twotimes(ctx):
+    global daping
+    if darkauction.is_running():
+        darkauction.cancel()
+        daping = False
+        await ctx.send("2x powder counter is now stopped please stop downtiming")
+    elif not darkauction.is_running():
+        darkauction.start()
+        daping = False
+        await ctx.send("Locked in powder grinder activated")
 
 @bot.slash_command(description="Get statuses and general stats of the bot")
 async def info(ctx):
