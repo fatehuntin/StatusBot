@@ -8,7 +8,7 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from discord.ext import tasks, commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, onlineemoji, \
-    offlineemoji, uptime, twotimesuser, send
+    offlineemoji, uptime, twotimesrole, send, dapingrole
 from utils import timestamper, hypixelapi, levelsapi, usernameapi
 
 description = """
@@ -27,31 +27,20 @@ bot = commands.Bot(
 
 pinged = False
 daping = False
-whosonline = []
-verified_logins = []
 online_list = []
 online_status = []
-newdata = []
-olddata = []
 last_online = [0, 0, 0, 0, 0, 0]
 sblevel = [0, 0, 0, 0, 0, 0]
 newlvl = [0, 0, 0, 0, 0, 0]
 expgained = [0, 0, 0, 0, 0, 0]
-twentyfourhourtime = [0, 0, 0, 0, 0, 0]
 totaltime = [0, 0, 0, 0, 0, 0]
 statusstarted = False
 channel = bot.get_channel(mainchannel)
 logchannel = bot.get_channel(loggingchannel)
-nextelection = 1677338100
-nextbooth = 1677449700
-usernames = ["", "", "", ""]
 for index, x in enumerate(uuid_list):
     online_list.append('False')
     online_status.append('False')
-    whosonline.append('')
-    verified_logins.append(False)
     last_online.append(int(time.time()))
-    newdata.append([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 gamers = []
 current_time = int(time.time())
 if debug:
@@ -71,15 +60,11 @@ if not debug:
 async def on_ready():
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
     print('-------------------------------------------------')
-    """for index, uuid in enumerate(uuid_list):
-        usernames[index] = usernameapi(uuid)
-        print(f"{index} {uuid} {usernames[index]}")
-        await asyncio.sleep(5)"""
     await bot.sync_commands()
     await restoremyfaithinhumanity.start()
 
 # TODO add button under offline msg to view the progress made while the account was online
-@tasks.loop(seconds=10)
+@tasks.loop(seconds=7)
 async def status():
     global statusname, statuscolour, statusemoji, online_time, sblevel, statusstarted, timeplayed
     if not statusstarted: 
@@ -163,21 +148,6 @@ async def status():
         elif len(gamers) == 0:
             await bot.change_presence(activity=discord.Game(name="No one is online"))
         await asyncio.sleep(2)
-
-@tasks.loop(hours=1)
-async def playtime():
-    global twentyfourhourtime
-    channel = bot.get_channel(mainchannel)
-    embed = discord.Embed(title="24h")
-    for index, uuid in enumerate(uuid_list):
-        if online_status[index]== 'True':
-            twentyfourhourtime[index] = timeplayed + totaltime[index] 
-            #last_online[index] = current_time
-        elif not online_status[index]:
-            twentyfourhourtime[index] = totaltime[index]
-        embed.add_field(name="", value=f"{username_list[index]} was online for {timestamper(twentyfourhourtime[index])} ({round((twentyfourhourtime[index]/86400)*100)}%)", inline=False)
-    await channel.send(embed=embed)
-    twentyfourhourtime = [0, 0, 0, 0, 0, 0]
         
 async def soopycommands(ctx: discord.AutocompleteContext):
     command_list = ["rtca", "sblvl", "currdungeon"]
@@ -242,28 +212,28 @@ async def restoremyfaithinhumanity():
 async def twotimespowder():
     global pinged
     channel = bot.get_channel(mainchannel)
-    url = "https://soopy.dev/api/soopyv2/botcommand?m=chevents"
+    url = "https://soopy.dev/api/soopyv2/botcommand?m=chevents%20mines"
     html = urlopen(url).read()
     soup = BeautifulSoup(html, features="html.parser")
     text = soup.get_text()
     if "DOUBLE_POWDER" in text:
-        if not pinged: await channel.send("2x Powder is now active in the dwarven mines <@" + twotimesuser + ">")
+        if not pinged: await channel.send("2x Powder is now active in the dwarven mines " + twotimesrole)
         pinged = True
     else:
         pinged = False
 
 
-@tasks.loop(minutes=1)
+@tasks.loop(seconds=20)
 async def darkauction():
-    global daping
+    global daping, dapingrole
     channel = bot.get_channel(mainchannel)
     obj = time.localtime()
     time_str = str(time.asctime(obj))
     if time_str[:-8].endswith("53"):
         if not daping: 
-            await channel.send("<@623618542658650113> 2 minutes to dark acution")
+            await channel.send(f"{dapingrole} 2 minutes to dark acution")
             await asyncio.sleep(60)
-            await channel.send("<@623618542658650113> FOOOBEL IT IS DARK AUCTION GO GET THE FUCKING THING PLEASE")
+            await channel.send(f"{dapingrole} FOOOBEL IT IS DARK AUCTION GO GET THE FUCKING THING PLEASE")
         daping = True
     else:
         daping = False
@@ -287,11 +257,11 @@ async def daping(ctx):
     if darkauction.is_running():
         darkauction.cancel()
         daping = False
-        await ctx.send("go farm famer boy")
+        await ctx.respond("go farm famer boy")
     elif not darkauction.is_running():
         darkauction.start()
         daping = False
-        await ctx.send("dark auction ping turned on")
+        await ctx.respond("dark auction ping turned on", ephemeral=True)
 
 @bot.slash_command(description="Get statuses and general stats of the bot")
 async def info(ctx):
