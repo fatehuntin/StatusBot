@@ -156,6 +156,7 @@ async def soopycommands(ctx: discord.AutocompleteContext):
 @bot.slash_command(description='soopy commands')
 async def soopy(ctx, command: discord.Option(str, autocomplete=discord.utils.basic_autocomplete(soopycommands)), player: discord.Option(str, required=False) ):
     soopyapi = requests.get(f'https://soopy.dev/api/soopyv2/botcommand?m={command}&u={player}')
+    asyncio.sleep(3)
     apidata_soopy = soopyapi.text
     soopyresult = json.loads(apidata_soopy)
     print(soopyresult)
@@ -244,11 +245,13 @@ async def twotimes(ctx):
     global pinged
     if twotimespowder.is_running():
         twotimespowder.cancel()
+        print("2x: ✗")
         pinged = False
         await ctx.respond("2x powder counter is now stopped please stop downtiming", ephemeral=True)
     elif not twotimespowder.is_running():
         twotimespowder.start()
         pinged = False
+        print("2x: ✓")
         await ctx.respond("Locked in powder grinder activated", ephemeral=True)
 
 @bot.slash_command(description="Dark auction foobel pinger")
@@ -256,20 +259,26 @@ async def daping(ctx):
     global daping
     if darkauction.is_running():
         darkauction.cancel()
+        print("da: ✗")
         daping = False
         await ctx.respond("go farm famer boy", ephemeral=True)
     elif not darkauction.is_running():
         darkauction.start()
+        print("da: ✓")
         daping = False
         await ctx.respond("dark auction ping turned on", ephemeral=True)
 
 @bot.slash_command(description="Get statuses and general stats of the bot")
 async def info(ctx):
-    global skillIssue, mayorstatus, statusStatus, powderstatus
+    global skillIssue, mayorstatus, statusStatus, powderstatus, dastatus
     if twotimespowder.is_running():
         powderstatus = "Running   :green_square:"
     if not twotimespowder.is_running():
         powderstatus = "Not running   :red_square:"
+    if darkauction.is_running():
+        dastatus = "Running   :green_square:"
+    if not darkauction.is_running():
+        dastatus = "Not running   :red_square:"
     if status.is_running():
         statusStatus = "Running   :green_square:"
     if not status.is_running():
@@ -282,20 +291,24 @@ async def info(ctx):
                           color=discord.Color.dark_purple()
                           )
     embed.add_field(name="Status",
-
                     value=statusStatus,
-                    inline=False
-                    )
+                    inline=False)
+    
     embed.add_field(name="Task keeper",
                     value=skillIssue,
                     inline=False)
+    
     embed.add_field(name="2x Powder",
                     value=powderstatus,
+                    inline=False)
+    
+    embed.add_field(name="Dark Auction",
+                    value=dastatus,
                     inline=False)
 
     embed.add_field(name="Ping",
                     value=f"Latency is {int(bot.latency * 1000)}ms")
-    await ctx.respond(embed=embed)
+    await ctx.respond(embed=embed, ephemeral=True)
 
 
 bot.run(KEY)
