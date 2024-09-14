@@ -13,8 +13,10 @@ def timestamper(epochin):
         epoch = str(int(int(epochin)/60)) + " minutes and " + str(int(epochin)%60) + " seconds"
     elif int(epochin) < 86400:
         epoch = str(int(int(epochin)/3600)) + " hours, " + str(int(int(epochin)%3600/60)) + " minutes and " + str(int(epochin)%60) + " seconds"
-    elif int(epochin) > 86400:
+    elif int(epochin) < 31536000:
         epoch = str(int(int(epochin)/86400)) + " days, " + str(int(int(epochin)%86400/3600)) + " hours, " + str(int(int(epochin)%3600/60)) + " minutes and " + str(int(epochin)%60) + " seconds"
+    elif int(epochin) > 31536000:
+        epoch = str(int(int(epochin)/31536000)) + " years, " + str(int(int(epochin)%31536000/86400)) + " days, " + str(int(int(epochin)%86400/3600)) + " hours, " + str(int(int(epochin)%3600/60)) + " minutes and " + str(int(epochin)%60) + " seconds"
     return epoch
 
 def fakeapi():
