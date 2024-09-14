@@ -245,11 +245,11 @@ async def twotimes(ctx):
     if twotimespowder.is_running():
         twotimespowder.cancel()
         pinged = False
-        await ctx.respond("2x powder counter is now stopped please stop downtiming")
+        await ctx.respond("2x powder counter is now stopped please stop downtiming", ephemeral=True)
     elif not twotimespowder.is_running():
         twotimespowder.start()
         pinged = False
-        await ctx.respond("Locked in powder grinder activated")
+        await ctx.respond("Locked in powder grinder activated", ephemeral=True)
 
 @bot.slash_command(description="Dark auction foobel pinger")
 async def daping(ctx):
@@ -257,7 +257,7 @@ async def daping(ctx):
     if darkauction.is_running():
         darkauction.cancel()
         daping = False
-        await ctx.respond("go farm famer boy")
+        await ctx.respond("go farm famer boy", ephemeral=True)
     elif not darkauction.is_running():
         darkauction.start()
         daping = False
