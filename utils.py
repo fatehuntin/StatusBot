@@ -47,7 +47,7 @@ def usernameapi(uuid):
 
 def levelsapi(uuid):
     try:
-        API_data_hypixel = requests.get(f"https://api.hypixel.net/skyblock/profiles?key={api_key}&uuid={uuid}")
+        API_data_hypixel = requests.get(f"https://api.hypixel.net/v2/skyblock/profiles?key={api_key}&uuid={uuid}")
         apidata_hypixel = API_data_hypixel.text
         parse_json_apidata_hypixel = json.loads(apidata_hypixel)
         for profile in parse_json_apidata_hypixel['profiles']:

@@ -8,8 +8,8 @@ from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from discord.ext import tasks, commands
 from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, onlineemoji, \
-    offlineemoji, uptime, twotimesrole, send, dapingrole
-from utils import timestamper, hypixelapi, levelsapi, usernameapi
+    offlineemoji, uptime, twotimesdm, send, dapingrole, twotimesch, activerole
+from utils import timestamper, hypixelapi, levelsapi
 
 description = """
 Status Bot
@@ -64,7 +64,7 @@ async def on_ready():
     await restoremyfaithinhumanity.start()
 
 # TODO add button under offline msg to view the progress made while the account was online
-@tasks.loop(seconds=7)
+@tasks.loop(seconds=5)
 async def status():
     global statusname, statuscolour, statusemoji, online_time, sblevel, statusstarted, timeplayed
     if not statusstarted: 
@@ -111,7 +111,9 @@ async def status():
             online_status[index] = 'False'
             if uptime:
                 timeplayed = current_time - last_online[index]
-                online_time = timestamper(current_time - last_online[index])
+                if debug: print("last_online[index]", last_online[index])
+                if last_online[index] == 0: online_time = "The bot just started please ignore this"
+                else: online_time = timestamper(current_time - last_online[index])
             else:
                 timeplayed = current_time - last_online[index]
                 online_time = ""
@@ -125,7 +127,7 @@ async def status():
             if expgained[index] > 0: 
                 embed.add_field(name="",value=f"Skyblock exp gained: {expgained[index]}")
                 expgained[index] = 0
-            #print(f"expgained: {expgained}, index: {index}, newlvl{newlvl}, sblvl: {sblevel}, username: {username}{username_list[index]}")
+            if debug: print(f"expgained: {expgained}, index: {index}, newlvl{newlvl}, sblvl: {sblevel}, username: {username}{username_list[index]}")
             if send[index]: await channel.send(embed=embed)
             else: pass 
             online_list[index] = online_status[index]
@@ -210,18 +212,68 @@ async def restoremyfaithinhumanity():
 
 
 @tasks.loop(minutes=1)
-async def twotimespowder():
-    global pinged
+async def mines2x():
+    global dmpinged
     channel = bot.get_channel(mainchannel)
     url = "https://soopy.dev/api/soopyv2/botcommand?m=chevents%20mines"
     html = urlopen(url).read()
     soup = BeautifulSoup(html, features="html.parser")
     text = soup.get_text()
     if "DOUBLE_POWDER" in text:
-        if not pinged: await channel.send("2x Powder is now active in the dwarven mines " + twotimesrole)
-        pinged = True
+        if not dmpinged: await channel.send("2x Powder is now active in the dwarven mines " + twotimesdm)
+        dmpinged = True
     else:
-        pinged = False
+        dmpinged = False
+
+
+@tasks.loop(minutes=1)
+async def dwarvenevent():
+    global activepinged
+    channel = bot.get_channel(mainchannel)
+    url = "https://soopy.dev/api/soopyv2/botcommand?m=chevents%20mines"
+    html = urlopen(url).read()
+    soup = BeautifulSoup(html, features="html.parser")
+    text = soup.get_text()
+    if "RAFFLE" in text:
+        if activepinged != 1 : await channel.send("Raffle " + activerole)
+        activepinged = 1
+    elif "GOBLIN_RAID" in text:
+        if activepinged != 2 : await channel.send("Goblin Raid " + activerole)
+        activepinged = 2
+    elif "MITHRIL_GOURMAND" in text: 
+        if activepinged != 3 : await channel.send("Mithril Grourmand " + activerole)
+        activepinged = 3
+    else:
+        activepinged = 0
+
+@bot.slash_command(description="THIS DOES NOT WORK")
+async def active(ctx):
+    global activepinged
+    if dwarvenevent.is_running():
+        dwarvenevent.cancel()
+        if debug: print("Active Events: ✗")
+        activepinged = False
+        await ctx.respond("Buh bye", ephemeral=True)
+    elif not hollows2x.is_running():
+        dwarvenevent.start()
+        activepinged = False
+        if debug: print("Active Events: ✓")
+        await ctx.respond("Active events will now be pinged", ephemeral=True)
+
+
+@tasks.loop(minutes=1)
+async def hollows2x():
+    global chpinged
+    channel = bot.get_channel(mainchannel)
+    url = "https://soopy.dev/api/soopyv2/botcommand?m=chevents"
+    html = urlopen(url).read()
+    soup = BeautifulSoup(html, features="html.parser")
+    text = soup.get_text()
+    if "DOUBLE_POWDER" in text:
+        if not chpinged: await channel.send("2x Powder is now active in the crystal hollows " + twotimesch)
+        chpinged = True
+    else:
+        chpinged = False
 
 
 @tasks.loop(seconds=20)
@@ -241,17 +293,31 @@ async def darkauction():
 
 
 @bot.slash_command(description="2X POWDER NOTIFIER TOGGLE MEOWWW")
-async def twotimes(ctx):
-    global pinged
-    if twotimespowder.is_running():
-        twotimespowder.cancel()
-        print("2x: ✗")
-        pinged = False
+async def dwarven(ctx):
+    global dmpinged
+    if mines2x.is_running():
+        mines2x.cancel()
+        if debug: print("2x dm: ✗")
+        dmpinged = False
         await ctx.respond("2x powder counter is now stopped please stop downtiming", ephemeral=True)
-    elif not twotimespowder.is_running():
-        twotimespowder.start()
-        pinged = False
-        print("2x: ✓")
+    elif not mines2x.is_running():
+        mines2x.start()
+        dmpinged = False
+        if debug: print("2x dm: ✓")
+        await ctx.respond("Locked in powder grinder activated", ephemeral=True)
+
+@bot.slash_command(description="2X POWDER NOTIFIER TOGGLE MEOWWW")
+async def hollows(ctx):
+    global chpinged
+    if hollows2x.is_running():
+        hollows2x.cancel()
+        if debug: print("2x ch: ✗")
+        chpinged = False
+        await ctx.respond("2x powder counter is now stopped please stop downtiming", ephemeral=True)
+    elif not hollows2x.is_running():
+        hollows2x.start()
+        chpinged = False
+        if debug: print("2x ch: ✓")
         await ctx.respond("Locked in powder grinder activated", ephemeral=True)
 
 @bot.slash_command(description="Dark auction foobel pinger")
@@ -259,12 +325,12 @@ async def daping(ctx):
     global daping
     if darkauction.is_running():
         darkauction.cancel()
-        print("da: ✗")
+        if debug: print("da: ✗")
         daping = False
         await ctx.respond("go farm famer boy", ephemeral=True)
     elif not darkauction.is_running():
         darkauction.start()
-        print("da: ✓")
+        if debug: print("da: ✓")
         daping = False
         await ctx.respond("dark auction ping turned on", ephemeral=True)
 
