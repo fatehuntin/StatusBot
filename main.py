@@ -4,10 +4,8 @@ import logging
 import time
 import discord
 import requests
-from urllib.request import urlopen
-from bs4 import BeautifulSoup
 from discord.ext import tasks, commands
-from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, loggingchannel, onlineemoji, \
+from config import uuid_list, username_list, debug, api_key, KEY, mainchannel, onlineemoji, \
     offlineemoji, uptime, twotimesdm, send, dapingrole, twotimesch, activerole
 from utils import timestamper, hypixelapi, levelsapi
 
@@ -25,7 +23,6 @@ bot = commands.Bot(
 
 
 
-pinged = False
 daping = False
 online_list = []
 online_status = []
@@ -35,26 +32,16 @@ newlvl = [0, 0, 0, 0, 0, 0]
 expgained = [0, 0, 0, 0, 0, 0]
 totaltime = [0, 0, 0, 0, 0, 0]
 statusstarted = False
-channel = bot.get_channel(mainchannel)
-logchannel = bot.get_channel(loggingchannel)
 for index, x in enumerate(uuid_list):
     online_list.append('False')
     online_status.append('False')
     last_online.append(int(time.time()))
 gamers = []
-current_time = int(time.time())
-if debug:
-    logging.basicConfig(
-        filename="logs.log",
-        format='%(asctime)s %(levelname)-8s %(message)s',
-        level=logging.DEBUG,
-        datefmt='%Y-%m-%d %H:%M:%S')
-if not debug:
-    logging.basicConfig(
-        filename="logs.log",
-        format='%(asctime)s %(levelname)-8s %(message)s',
-        level=logging.WARNING,
-        datefmt='%Y-%m-%d %H:%M:%S')
+logging.basicConfig(
+    filename="logs.log",
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.DEBUG if debug else logging.WARNING,
+    datefmt='%Y-%m-%d %H:%M:%S')
     
 @bot.event
 async def on_ready():
@@ -73,7 +60,6 @@ async def status():
     for index, uuid in enumerate(uuid_list):
         parse_json_apidata_hypixel = hypixelapi(uuid, api_key)
         channel = bot.get_channel(mainchannel)
-        logchannel = bot.get_channel(loggingchannel)
         current_time = int(time.time())
         if not parse_json_apidata_hypixel['success']:
             break
@@ -216,9 +202,7 @@ async def mines2x():
     global dmpinged
     channel = bot.get_channel(mainchannel)
     url = "https://soopy.dev/api/soopyv2/botcommand?m=chevents%20mines"
-    html = urlopen(url).read()
-    soup = BeautifulSoup(html, features="html.parser")
-    text = soup.get_text()
+    text = requests.get(url).text
     if "DOUBLE_POWDER" in text:
         if not dmpinged: await channel.send("2x Powder is now active in the dwarven mines " + twotimesdm)
         dmpinged = True
@@ -231,9 +215,7 @@ async def dwarvenevent():
     global activepinged
     channel = bot.get_channel(mainchannel)
     url = "https://soopy.dev/api/soopyv2/botcommand?m=chevents%20mines"
-    html = urlopen(url).read()
-    soup = BeautifulSoup(html, features="html.parser")
-    text = soup.get_text()
+    text = requests.get(url).text
     if "RAFFLE" in text:
         if activepinged != 1 : await channel.send("Raffle " + activerole)
         activepinged = 1
@@ -266,9 +248,7 @@ async def hollows2x():
     global chpinged
     channel = bot.get_channel(mainchannel)
     url = "https://soopy.dev/api/soopyv2/botcommand?m=chevents"
-    html = urlopen(url).read()
-    soup = BeautifulSoup(html, features="html.parser")
-    text = soup.get_text()
+    text = requests.get(url).text
     if "DOUBLE_POWDER" in text:
         if not chpinged: await channel.send("2x Powder is now active in the crystal hollows " + twotimesch)
         chpinged = True
