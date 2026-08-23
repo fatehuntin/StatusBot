@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import os
 import time
 import discord
 import requests
@@ -26,23 +27,67 @@ bot = commands.Bot(
 daping = False
 online_list = []
 online_status = []
-last_online = [0, 0, 0, 0, 0, 0]
-sblevel = [0, 0, 0, 0, 0, 0]
-newlvl = [0, 0, 0, 0, 0, 0]
-expgained = [0, 0, 0, 0, 0, 0]
-totaltime = [0, 0, 0, 0, 0, 0]
+last_online = []
+sblevel = []
+newlvl = []
+expgained = []
+totaltime = []
 statusstarted = False
-for index, x in enumerate(uuid_list):
-    online_list.append('False')
-    online_status.append('False')
-    last_online.append(int(time.time()))
 gamers = []
+STATE_FILE = "status_state.json"
 logging.basicConfig(
     filename="logs.log",
     format='%(asctime)s %(levelname)-8s %(message)s',
     level=logging.DEBUG if debug else logging.WARNING,
     datefmt='%Y-%m-%d %H:%M:%S')
-    
+
+
+def load_status_state():
+    try:
+        with open(STATE_FILE) as state_file:
+            state = json.load(state_file)
+    except FileNotFoundError:
+        return {}
+    except (OSError, json.JSONDecodeError) as error:
+        logging.warning("Could not load status state: %s", error)
+        return {}
+    return state.get("players", {}) if isinstance(state, dict) else {}
+
+
+def save_status_state():
+    state = {
+        "players": {
+            uuid: {
+                "last_online": last_online[index],
+                "experience": sblevel[index],
+                "current_experience": newlvl[index],
+                "online": online_status[index] == "True",
+            }
+            for index, uuid in enumerate(uuid_list)
+        }
+    }
+    try:
+        with open(f"{STATE_FILE}.tmp", "w") as state_file:
+            json.dump(state, state_file)
+        os.replace(f"{STATE_FILE}.tmp", STATE_FILE)
+    except OSError as error:
+        logging.warning("Could not save status state: %s", error)
+
+
+saved_players = load_status_state()
+for index, uuid in enumerate(uuid_list):
+    saved_player = saved_players.get(uuid, {})
+    is_online = saved_player.get("online") is True
+    online_list.append("True" if is_online else "False")
+    online_status.append("True" if is_online else "False")
+    last_online.append(saved_player.get("last_online", int(time.time())))
+    sblevel.append(saved_player.get("experience", 0))
+    newlvl.append(saved_player.get("current_experience", 0))
+    expgained.append(0)
+    totaltime.append(0)
+    if is_online:
+        gamers.append(username_list[index])
+
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
@@ -78,6 +123,7 @@ async def status():
             statusemoji = onlineemoji
             ballsinyamouth = "They were offline for:"
             online_status[index] = 'True'
+            save_status_state()
             lastorsince = "They have been online since"
 
             if uptime:
@@ -104,6 +150,15 @@ async def status():
                 timeplayed = current_time - last_online[index]
                 online_time = ""
         if online_status[index] != online_list[index]:
+            if online_status[index] == 'True':
+                gamers.append(username)
+            else:
+                gamers.remove(username)
+                totaltime[index] = totaltime[index] + current_time - last_online[index]
+            last_online[index] = current_time
+            online_list[index] = online_status[index]
+            save_status_state()
+
             embed = discord.Embed(title=f"{username} is now {statusname}", colour=statuscolour,
                                   url=f"https://sky.shiiyu.moe/stats/{uuid_list[index]}")
             embed.set_thumbnail(url="https://visage.surgeplay.com/head/" + str(uuid))
@@ -116,15 +171,6 @@ async def status():
             if debug: print(f"expgained: {expgained}, index: {index}, newlvl{newlvl}, sblvl: {sblevel}, username: {username}{username_list[index]}")
             if send[index]: await channel.send(embed=embed)
             else: pass 
-            online_list[index] = online_status[index]
-            if online_status[index] == 'True':
-                gamers.append(username)
-                last_online[index] = current_time
-            elif online_status[index] == 'False':
-                gamers.remove(username)
-                timeplayed = current_time - last_online[index]
-                totaltime[index] = totaltime[index] + timeplayed
-                last_online[index] = current_time
         else:
             pass
         if len(gamers) > 1:

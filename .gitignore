@@ -7,3 +7,5 @@ totaltime.py
 !requirements.txt
 *.txt
 logs.yaml
+status_state.json
+status_state.json.tmp
